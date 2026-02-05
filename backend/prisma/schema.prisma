@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum JobStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Job {
+  id              Int       @id @default(autoincrement())
+  
+  // E-mail Content
+  recipient       String
+  subject         String
+  body            String
+  
+  // Metadata for Sender/Rate Limits
+  senderId        String    
+  
+  // Job Control
+  status          JobStatus @default(PENDING)
+  scheduledAt     DateTime
+  sentAt          DateTime? 
+  
+  // Idempotency: Client-provided unique key to prevent duplicate schedules
+  idempotencyKey  String?   @unique 
+
+  // BullMQ job ID reference (optional, for debugging/correlation)
+  bullMqJobId     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, scheduledAt]) // Optimization for polling if we weren't using BullMQ, but good for reporting
+  @@index([senderId, scheduledAt]) // Useful for per-sender history
+}
+
+model User {
+  id        String   @id @default(uuid())
+  googleId  String   @unique
+  email     String   @unique
+  name      String
+  avatar    String?
+  createdAt DateTime @default(now())
+}
