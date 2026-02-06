@@ -1,45 +1,68 @@
-import express from 'express';
-import { emailQueue } from './queues/emailQueue';
-import { prisma } from './db/prisma';
-import './workers/emailWorker'; // Import to start the worker
-import { config } from './config';
+import express from "express";
+import cors from "cors";
+import "dotenv/config";
 
-import cors from 'cors';
-
-import passport from './config/passport';
-import authRoutes from './routes/auth';
-import { authenticateJWT } from './middleware/auth';
+import { emailQueue } from "./queues/emailQueue";
+import { prisma } from "./db/prisma";
+import "./workers/emailWorker"; // starts worker
+import passport from "./config/passport";
+import authRoutes from "./routes/auth";
+import { authenticateJWT } from "./middleware/auth";
 
 const app = express();
+
+/* =====================
+   ENV SAFETY CHECKS
+===================== */
+if (!process.env.DATABASE_URL) {
+    console.error("❌ DATABASE_URL is missing");
+}
+
+if (!process.env.REDIS_URL) {
+    console.error("❌ REDIS_URL is missing");
+}
+
+/* =====================
+   MIDDLEWARE
+===================== */
 app.use(express.json());
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' })); // Allow Frontend
+
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        credentials: true
+    })
+);
+
 app.use(passport.initialize());
 
-// Auth Routes
-app.use('/auth', authRoutes);
+/* =====================
+   ROUTES
+===================== */
+app.use("/auth", authRoutes);
 
-app.get('/jobs', authenticateJWT, async (req, res) => {
+app.get("/jobs", authenticateJWT, async (req, res) => {
     try {
         const jobs = await prisma.job.findMany({
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             take: 20
         });
         res.json(jobs);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch jobs' });
+        console.error("❌ Fetch jobs failed:", error);
+        res.status(500).json({ error: "Failed to fetch jobs" });
     }
 });
 
-app.post('/schedule-email', authenticateJWT, async (req, res) => {
+app.post("/schedule-email", authenticateJWT, async (req, res) => {
     try {
         const { recipient, subject, body, senderId, scheduledAt } = req.body;
 
         if (!recipient || !subject || !body || !senderId) {
-            res.status(400).json({ error: 'Missing required fields' });
-            return;
+            return res.status(400).json({ error: "Missing required fields" });
         }
 
-        // 1. Create Job in Database
+        // 1️⃣ Create job in DB
         const job = await prisma.job.create({
             data: {
                 recipient,
@@ -47,29 +70,51 @@ app.post('/schedule-email', authenticateJWT, async (req, res) => {
                 body,
                 senderId,
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : new Date(),
-                status: 'PENDING',
-            },
+                status: "PENDING"
+            }
         });
 
-        // 2. Calculate Delay
-        const delay = scheduledAt ? new Date(scheduledAt).getTime() - Date.now() : 0;
+        // 2️⃣ Calculate delay
+        const delay = scheduledAt
+            ? new Date(scheduledAt).getTime() - Date.now()
+            : 0;
 
-        // 3. Add to BullMQ
-        await emailQueue.add('send-email', { jobId: job.id }, {
-            delay: Math.max(0, delay),
-            removeOnComplete: true,
-            jobId: job.id.toString() // Use DB ID as BullMQ Job ID for deduplication if needed
-        });
+        // 3️⃣ Queue email
+        await emailQueue.add(
+            "send-email",
+            { jobId: job.id },
+            {
+                delay: Math.max(0, delay),
+                removeOnComplete: true,
+                jobId: job.id.toString()
+            }
+        );
 
-        res.json({ message: 'Email scheduled', jobId: job.id });
+        res.json({ message: "Email scheduled", jobId: job.id });
 
     } catch (error: any) {
-        console.error('Error scheduling email:', error);
+        console.error("❌ Schedule email failed:", error);
         res.status(500).json({ error: error.message });
     }
 });
 
-app.listen(config.port, () => {
-    console.log(`Server running on port ${config.port}`);
-    console.log(`Worker is processing jobs...`);
+/* =====================
+   GLOBAL ERROR HANDLER
+===================== */
+app.use((err: any, req: any, res: any, next: any) => {
+    console.error("🔥 UNHANDLED ERROR:", err.stack || err);
+    res.status(500).json({
+        success: false,
+        message: err.message || "Internal server error"
+    });
+});
+
+/* =====================
+   START SERVER (RENDER SAFE)
+===================== */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log("📨 Email worker active");
 });
