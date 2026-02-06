@@ -1,0 +1,89 @@
+﻿Testing Prisma Connection...
+DATABASE_URL: Set
+node.exe : 
+Initialization 
+failed: PrismaClientC
+onstructorValidationE
+rror: Unknown 
+property datasources 
+provided to 
+PrismaClient 
+constructor.
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Initial   
+ ization ...nt co    
+nstructor.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+Read more at https://
+pris.ly/d/client-cons
+tructor
+    at validatePrisma
+ClientOptions 
+(D:\Amritesh 
+Singh\Projects\Cold 
+Mail House\backend\no
+de_modules\@prisma\cl
+ient\src\runtime\util
+s\validatePrismaClien
+tOptions.ts:239:13)
+    at new t 
+(D:\Amritesh 
+Singh\Projects\Cold 
+Mail House\backend\no
+de_modules\@prisma\cl
+ient\src\runtime\getP
+rismaClient.ts:281:7)
+    at dotenv 
+(D:\Amritesh 
+Singh\Projects\Cold 
+Mail House\backend\te
+st_prisma.ts:9:20)
+    at 
+Object.<anonymous> 
+(D:\Amritesh 
+Singh\Projects\Cold 
+Mail House\backend\te
+st_prisma.ts:29:1)
+    at 
+Module._compile (node
+:internal/modules/cjs
+/loader:1706:14)
+    at 
+Object.transformer (C
+:\Users\babua\AppData
+\Local\npm-cache\_npx
+\fd45a72a545557e9\nod
+e_modules\tsx\dist\re
+gister-D46fvsV_.cjs:3
+:1104)
+    at Module.load (n
+ode:internal/modules/
+cjs/loader:1441:32)
+    at 
+Function._load (node:
+internal/modules/cjs/
+loader:1263:12)
+    at TracingChannel
+.traceSync (node:diag
+nostics_channel:322:1
+4)
+    at 
+wrapModuleLoad (node:
+internal/modules/cjs/
+loader:237:24)
