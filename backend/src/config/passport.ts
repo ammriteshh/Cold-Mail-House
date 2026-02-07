@@ -9,7 +9,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID || '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-            callbackURL: `${process.env.API_URL || 'http://localhost:3000'}/auth/google/callback`, // Needs full URL
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.API_URL || 'http://localhost:3000'}/auth/google/callback`,
         },
         async (accessToken: any, refreshToken: any, profile: any, done: any) => {
             try {
