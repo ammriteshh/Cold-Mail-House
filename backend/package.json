@@ -13,7 +13,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@prisma/client": "^7.3.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
@@ -27,6 +26,7 @@
   },
   "dependencies": {
     "prisma": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/config": "^7.3.0",
     "bullmq": "^5.67.2",
