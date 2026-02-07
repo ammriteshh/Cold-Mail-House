@@ -37,6 +37,7 @@ passport.use(
 
                 return done(null, user);
             } catch (error) {
+                console.error("❌ Passport Config Error:", error);
                 return done(error as any, undefined);
             }
         }

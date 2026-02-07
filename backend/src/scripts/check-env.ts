@@ -1,15 +1,17 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 // Try to load from .env file directly to be sure
 // Assuming this script is run from backend root or backend/src
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const sensitiveKeys = ['SECRET', 'KEY', 'PASS', 'TOKEN', 'CREDENTIAL'];
+let output = '';
 
-console.log("--- Environment Variables Check ---");
-console.log(`Current Working Directory: ${process.cwd()}`);
-console.log(`Node Environment: ${process.env.NODE_ENV}`);
+output += "--- Environment Variables Check ---\n";
+output += `Current Working Directory: ${process.cwd()}\n`;
+output += `Node Environment: ${process.env.NODE_ENV}\n`;
 
 const keysToCheck = [
     'PORT',
@@ -19,6 +21,7 @@ const keysToCheck = [
     'GOOGLE_CLIENT_SECRET',
     'GOOGLE_CALLBACK_URL',
     'JWT_SECRET',
+    'DATABASE_URL',
     'REDIS_URL',
     'REDIS_HOST',
     'REDIS_PORT'
@@ -27,7 +30,7 @@ const keysToCheck = [
 keysToCheck.forEach(key => {
     const value = process.env[key];
     if (!value) {
-        console.log(`❌ ${key}: MISSING`);
+        output += `❌ ${key}: MISSING\n`;
     } else {
         const isSensitive = sensitiveKeys.some(s => key.includes(s));
         if (isSensitive) {
@@ -35,11 +38,14 @@ keysToCheck.forEach(key => {
             const masked = value.length > 6
                 ? value.substring(0, 3) + '...' + value.substring(value.length - 3)
                 : '***';
-            console.log(`✅ ${key}: SET (${masked})`);
+            output += `✅ ${key}: SET (${masked})\n`;
         } else {
-            console.log(`✅ ${key}: SET (${value})`);
+            output += `✅ ${key}: SET (${value})\n`;
         }
     }
 });
 
-console.log("-----------------------------------");
+output += "-----------------------------------\n";
+
+fs.writeFileSync(path.resolve(__dirname, '../../env-check-output.txt'), output, 'utf8');
+console.log("Output written to env-check-output.txt");
