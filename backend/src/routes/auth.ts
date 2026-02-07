@@ -13,7 +13,15 @@ router.get(
 // Google Callback
 router.get(
     '/google/callback',
-    passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+    (req, res, next) => {
+        passport.authenticate('google', { session: false }, (err, user, info) => {
+            if (err || !user) {
+                return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+            }
+            req.user = user;
+            next();
+        })(req, res, next);
+    },
     (req, res) => {
         // User should be available in req.user from passport
         const user = (req as any).user;
