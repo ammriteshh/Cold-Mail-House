@@ -3,11 +3,8 @@ import { useForm } from 'react-hook-form';
 import { scheduleEmail } from '../api/jobs';
 import type { CreateJobDto } from '../types/job';
 
-import { useAuth } from '@clerk/clerk-react';
-
 const ScheduleForm: React.FC = () => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateJobDto>();
-    const { getToken } = useAuth();
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -15,8 +12,7 @@ const ScheduleForm: React.FC = () => {
         setLoading(true);
         setMsg(null);
         try {
-            const token = await getToken();
-            await scheduleEmail(data, token);
+            await scheduleEmail(data);
             setMsg({ type: 'success', text: 'Email scheduled successfully!' });
             reset();
         } catch (err) {

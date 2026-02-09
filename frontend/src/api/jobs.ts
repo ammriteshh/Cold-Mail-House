@@ -7,18 +7,10 @@ const api = axios.create({
     baseURL: API_URL,
 });
 
-export const scheduleEmail = async (data: CreateJobDto, token: string | null) => {
-    return api.post<{ message: string; jobId: number }>('/schedule-email', data, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+export const scheduleEmail = async (data: CreateJobDto) => {
+    return api.post<{ message: string; jobId: number }>('/schedule-email', data);
 };
 
-export const getJobs = async (token: string | null) => {
-    return api.get<Job[]>('/jobs', {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+export const getJobs = async () => {
+    return api.get<Job[]>('/jobs');
 };
