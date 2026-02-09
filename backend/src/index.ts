@@ -37,7 +37,7 @@ app.use(
 );
 
 // app.use(passport.initialize()); // REMOVED
-app.use(clerkMiddleware);
+app.use(clerkMiddleware as any);
 
 /* =====================
    ROUTES
