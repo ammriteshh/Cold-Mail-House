@@ -6,14 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 require("dotenv/config");
-const clerk_sdk_node_1 = require("@clerk/clerk-sdk-node");
 const emailQueue_1 = require("./queues/emailQueue");
 const prisma_1 = require("./db/prisma");
 require("./workers/emailWorker"); // starts worker
-// import passport from "./config/passport"; // REMOVED
-// import authRoutes from "./routes/auth"; // REMOVED
-// import { authenticateJWT } from "./middleware/auth"; // REMOVED
-const clerk_1 = require("./middleware/clerk");
 const app = (0, express_1.default)();
 /* =====================
    ENV SAFETY CHECKS
@@ -32,16 +27,14 @@ app.use((0, cors_1.default)({
     origin: process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? ["https://cold-mail-house-1.onrender.com", "https://cold-mail-house.onrender.com"] : "http://localhost:5173"),
     credentials: true
 }));
-// app.use(passport.initialize()); // REMOVED
-app.use(clerk_1.clerkMiddleware);
 /* =====================
    ROUTES
 ===================== */
-// app.use("/auth", authRoutes); // REMOVED
-app.get("/jobs", (0, clerk_sdk_node_1.ClerkExpressRequireAuth)(), async (req, res) => {
+app.get("/jobs", async (req, res) => {
     try {
+        const userId = "default-user";
         const jobs = await prisma_1.prisma.job.findMany({
-            where: { senderId: req.auth.userId }, // Filter by logged-in user
+            where: { senderId: userId }, // Filter by logged-in user
             orderBy: { createdAt: "desc" },
             take: 20
         });
@@ -52,10 +45,10 @@ app.get("/jobs", (0, clerk_sdk_node_1.ClerkExpressRequireAuth)(), async (req, re
         res.status(500).json({ error: "Failed to fetch jobs" });
     }
 });
-app.post("/schedule-email", (0, clerk_sdk_node_1.ClerkExpressRequireAuth)(), async (req, res) => {
+app.post("/schedule-email", async (req, res) => {
     try {
         const { recipient, subject, body, scheduledAt } = req.body;
-        const senderId = req.auth.userId; // Securely get from Clerk
+        const senderId = "default-user";
         if (!recipient || !subject || !body || !senderId) {
             return res.status(400).json({ error: "Missing required fields" });
         }
