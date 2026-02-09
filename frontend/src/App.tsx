@@ -1,6 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 
@@ -29,7 +29,7 @@ function App() {
                 <Dashboard />
               </SignedIn>
               <SignedOut>
-                <RedirectToSignIn />
+                <Navigate to="/login" />
               </SignedOut>
             </>
           }
