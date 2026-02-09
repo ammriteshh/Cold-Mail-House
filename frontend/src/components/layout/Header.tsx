@@ -1,27 +1,12 @@
 import { Search, Bell, Moon, Sun } from 'lucide-react';
-import { useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 
 const Header = () => {
-    // Basic dark mode toggle implementation (can be moved to context later)
-    const toggleTheme = () => {
-        const html = document.documentElement;
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        } else {
-            html.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        }
-    };
+    const { theme, setTheme } = useTheme();
 
-    // Initialize theme on load (this script usually goes in index.html to avoid FOUC, but doing it here for simplicity in this step)
-    useEffect(() => {
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-    }, []);
+    const toggleTheme = () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
 
     return (
         <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 fixed top-0 right-0 left-64 z-10 transition-colors duration-300">
@@ -49,6 +34,7 @@ const Header = () => {
                 <button
                     onClick={toggleTheme}
                     className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                    title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
                     <span className="dark:hidden"><Moon className="h-5 w-5" /></span>
                     <span className="hidden dark:block"><Sun className="h-5 w-5" /></span>
