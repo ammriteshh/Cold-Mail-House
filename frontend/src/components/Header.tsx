@@ -1,8 +1,9 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useUser, useClerk } from '@clerk/clerk-react';
 
 const Header: React.FC = () => {
-    const { user, logout } = useAuth();
+    const { user } = useUser();
+    const { signOut } = useClerk();
 
     return (
         <header className="bg-white shadow">
@@ -11,11 +12,11 @@ const Header: React.FC = () => {
                 {user && (
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
-                            {user.avatar && <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />}
-                            <span className="text-gray-700 font-medium">{user.name}</span>
+                            <img src={user.imageUrl} alt={user.fullName || ""} className="w-8 h-8 rounded-full" />
+                            <span className="text-gray-700 font-medium">{user.fullName}</span>
                         </div>
                         <button
-                            onClick={logout}
+                            onClick={() => signOut()}
                             className="text-sm text-red-600 hover:text-red-800"
                         >
                             Logout
