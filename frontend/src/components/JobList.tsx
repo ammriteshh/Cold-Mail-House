@@ -3,12 +3,16 @@ import { getJobs } from '../api/jobs';
 import type { Job } from '../types/job';
 import StatusBadge from './StatusBadge';
 
+import { useAuth } from '@clerk/clerk-react';
+
 const JobList: React.FC = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
+    const { getToken } = useAuth();
 
     const fetchJobs = async () => {
         try {
-            const res = await getJobs();
+            const token = await getToken();
+            const res = await getJobs(token);
             setJobs(res.data);
         } catch (error) {
             console.error("Failed to fetch jobs");
@@ -19,7 +23,7 @@ const JobList: React.FC = () => {
         fetchJobs();
         const interval = setInterval(fetchJobs, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [getToken]); // Add getToken to dependencies usually, but it's stable
 
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">

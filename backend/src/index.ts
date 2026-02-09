@@ -1,13 +1,15 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 
 import { emailQueue } from "./queues/emailQueue";
 import { prisma } from "./db/prisma";
 import "./workers/emailWorker"; // starts worker
-import passport from "./config/passport";
-import authRoutes from "./routes/auth";
-import { authenticateJWT } from "./middleware/auth";
+// import passport from "./config/passport"; // REMOVED
+// import authRoutes from "./routes/auth"; // REMOVED
+// import { authenticateJWT } from "./middleware/auth"; // REMOVED
+import { clerkMiddleware } from "./middleware/clerk";
 
 const app = express();
 
@@ -34,16 +36,18 @@ app.use(
     })
 );
 
-app.use(passport.initialize());
+// app.use(passport.initialize()); // REMOVED
+app.use(clerkMiddleware);
 
 /* =====================
    ROUTES
 ===================== */
-app.use("/auth", authRoutes);
+// app.use("/auth", authRoutes); // REMOVED
 
-app.get("/jobs", authenticateJWT, async (req, res) => {
+app.get("/jobs", ClerkExpressRequireAuth() as any, async (req: any, res: any) => {
     try {
         const jobs = await prisma.job.findMany({
+            where: { senderId: req.auth.userId }, // Filter by logged-in user
             orderBy: { createdAt: "desc" },
             take: 20
         });
@@ -54,9 +58,10 @@ app.get("/jobs", authenticateJWT, async (req, res) => {
     }
 });
 
-app.post("/schedule-email", authenticateJWT, async (req, res) => {
+app.post("/schedule-email", ClerkExpressRequireAuth() as any, async (req: any, res: any) => {
     try {
-        const { recipient, subject, body, senderId, scheduledAt } = req.body;
+        const { recipient, subject, body, scheduledAt } = req.body;
+        const senderId = req.auth.userId; // Securely get from Clerk
 
         if (!recipient || !subject || !body || !senderId) {
             return res.status(400).json({ error: "Missing required fields" });
