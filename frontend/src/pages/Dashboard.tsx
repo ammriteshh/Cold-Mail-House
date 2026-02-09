@@ -1,26 +1,38 @@
-import React from 'react';
-import ScheduleForm from '../components/ScheduleForm';
-import JobList from '../components/JobList';
-import Header from '../components/Header';
+import Layout from '../components/layout/Layout';
+import StatCard from '../components/dashboard/StatCard';
+import EmailComposer from '../components/dashboard/EmailComposer';
+import ScheduledTable from '../components/dashboard/ScheduledTable';
+import { Mail, Send, CheckCircle, AlertOctagon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Dashboard: React.FC = () => {
     return (
-        <div className="min-h-screen bg-gray-100 pb-10">
-            <Header />
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-                <div className="text-center mb-10">
-                    <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                        Cold Mail House
-                    </h1>
-                    <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                        High-performance email scheduling system.
-                    </p>
+        <Layout>
+            {/* KPI Grid */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+                <StatCard title="Emails Sent" value="1,245" change="12%" trend="up" icon={Send} color="indigo" />
+                <StatCard title="Scheduled" value="8" change="2" trend="neutral" icon={Mail} color="blue" />
+                <StatCard title="Success Rate" value="98.5%" change="0.5%" trend="up" icon={CheckCircle} color="green" />
+                <StatCard title="Failed" value="12" change="3" trend="down" icon={AlertOctagon} color="red" />
+            </motion.div>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Left Column: Composer */}
+                <div className="xl:col-span-1">
+                    <EmailComposer />
                 </div>
 
-                <ScheduleForm />
-                <JobList />
+                {/* Right Column: Table */}
+                <div className="xl:col-span-2">
+                    <ScheduledTable />
+                </div>
             </div>
-        </div>
+        </Layout>
     );
 };
 
