@@ -88,11 +88,13 @@ const processEmailJob = async (job: Job) => {
             where: { id: jobId },
             data: {
                 status: 'FAILED',
-                // potentially store error message
+                failureReason: error.message || 'Unknown error',
             },
         });
 
-        throw error; // Trigger BullMQ retry (exponential backoff)
+        // Trigger BullMQ retry if it's a transient error, or consume it?
+        // For now, allow retry logic to proceed as configured in Queue/Worker
+        throw error;
     }
 };
 
