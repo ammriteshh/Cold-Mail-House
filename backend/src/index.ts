@@ -5,7 +5,7 @@ import "dotenv/config";
 
 import { emailQueue } from "./queues/emailQueue";
 import { prisma } from "./db/prisma";
-import "./workers/emailWorker"; // starts worker
+import { emailWorker } from "./workers/emailWorker"; // starts worker
 
 const app = express();
 
@@ -60,4 +60,14 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log("📨 Email worker active");
+
+    const gracefulShutdown = async () => {
+        console.log('🛑 Shutting down gracefully...');
+        await emailQueue.close();
+        await emailWorker.close();
+        process.exit(0);
+    };
+
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
 });
