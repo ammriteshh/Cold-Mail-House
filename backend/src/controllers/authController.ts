@@ -26,9 +26,9 @@ export const register = async (req: Request, res: Response) => {
         });
 
         res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Registration failed:', error);
-        res.status(500).json({ error: 'Registration failed' });
+        res.status(500).json({ error: 'Registration failed', details: error.message });
     }
 };
 
@@ -52,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Must be 'none' for cross-site cookie
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
