@@ -22,5 +22,14 @@ export interface JobStats {
 }
 
 export const getJobStats = async () => {
-    return api.get<JobStats>('/stats');
+    const res = await api.get<{ totalSent: number, totalPending: number, totalFailed: number, successRate: number }>('/api/analytics');
+    // Map new API response to old interface to keep frontend working
+    return {
+        data: {
+            sent: res.data.totalSent,
+            pending: res.data.totalPending,
+            failed: res.data.totalFailed,
+            successRate: res.data.successRate
+        }
+    };
 };

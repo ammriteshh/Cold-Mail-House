@@ -30,6 +30,7 @@ model Job {
   status          JobStatus @default(PENDING)
   scheduledAt     DateTime
   sentAt          DateTime? 
+  failureReason   String? 
   
   // Idempotency: Client-provided unique key to prevent duplicate schedules
   idempotencyKey  String?   @unique 
