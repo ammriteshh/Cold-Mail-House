@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getJobs } from '../../api/jobs';
 import type { Job } from '../../types/job';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, XCircle, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { Clock, CheckCircle, XCircle } from 'lucide-react';
 
 const StatusBadge = ({ status }: { status: string }) => {
     const styles = {
@@ -57,9 +57,7 @@ const ScheduledTable: React.FC = () => {
         >
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Jobs</h3>
-                <button onClick={fetchJobs} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
-                    <RefreshCw className="h-4 w-4" />
-                </button>
+
             </div>
 
             <div className="overflow-x-auto">
@@ -70,7 +68,7 @@ const ScheduledTable: React.FC = () => {
                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Subject</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
@@ -78,7 +76,6 @@ const ScheduledTable: React.FC = () => {
                             <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-slate-900 dark:text-white">{job.recipient}</div>
-                                    <div className="text-xs text-slate-500">ID: #{job.id}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-slate-600 dark:text-slate-300 max-w-xs truncate">{job.subject}</div>
@@ -89,11 +86,7 @@ const ScheduledTable: React.FC = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                     {new Date(job.scheduledAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </button>
-                                </td>
+
                             </tr>
                         ))}
                         {!loading && jobs.length === 0 && (

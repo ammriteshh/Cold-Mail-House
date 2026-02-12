@@ -74,21 +74,14 @@ const ScheduleForm: React.FC = () => {
                     {errors.body && <span className="text-red-500 text-xs">Required</span>}
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Schedule (Optional)</label>
-                    <input
-                        {...register('scheduledAt')}
-                        type="datetime-local"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-                    />
-                </div>
+
 
                 <button
                     type="submit"
                     disabled={loading}
                     className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
-                    {loading ? 'Scheduling...' : 'Schedule Email'}
+                    {loading ? 'Sending...' : 'Send'}
                 </button>
             </form>
         </div>

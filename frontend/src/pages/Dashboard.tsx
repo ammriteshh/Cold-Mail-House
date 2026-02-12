@@ -15,9 +15,9 @@ const Dashboard: React.FC = () => {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             >
                 <StatCard title="Emails Sent" value="1,245" change="12%" trend="up" icon={Send} color="indigo" />
-                <StatCard title="Scheduled" value="8" change="2" trend="neutral" icon={Mail} color="blue" />
+                <StatCard title="Scheduled Count" value="8" change="2" trend="neutral" icon={Mail} color="blue" />
                 <StatCard title="Success Rate" value="98.5%" change="0.5%" trend="up" icon={CheckCircle} color="green" />
-                <StatCard title="Failed" value="12" change="3" trend="down" icon={AlertOctagon} color="red" />
+                <StatCard title="Failed Count" value="12" change="3" trend="down" icon={AlertOctagon} color="red" />
             </motion.div>
 
             {/* Main Content Grid */}
