@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-console.log("API_URL:", API_URL);
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:3000' : 'https://cold-mail-house-1.onrender.com'); // Fallback to likely prod URL
+console.log("API_URL configured as:", API_URL);
 
 export const client = axios.create({
     baseURL: API_URL,
