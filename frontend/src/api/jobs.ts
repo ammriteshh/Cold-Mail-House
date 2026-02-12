@@ -14,3 +14,13 @@ export const scheduleEmail = async (data: CreateJobDto) => {
 export const getJobs = async () => {
     return api.get<Job[]>('/jobs');
 };
+export interface JobStats {
+    sent: number;
+    pending: number;
+    failed: number;
+    successRate: number;
+}
+
+export const getJobStats = async () => {
+    return api.get<JobStats>('/stats');
+};

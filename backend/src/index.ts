@@ -51,6 +51,35 @@ app.get("/jobs", async (req: any, res: any) => {
     }
 });
 
+app.get("/stats", async (req: any, res: any) => {
+    try {
+        const userId = "default-user";
+
+        // Count jobs by status
+        // status: COMPLETED, PENDING, FAILED
+        const [sent, pending, failed] = await Promise.all([
+            prisma.job.count({ where: { senderId: userId, status: "COMPLETED" } }),
+            prisma.job.count({ where: { senderId: userId, status: "PENDING" } }),
+            prisma.job.count({ where: { senderId: userId, status: "FAILED" } })
+        ]);
+
+        const totalSentAttempted = sent + failed;
+        const successRate = totalSentAttempted > 0
+            ? Math.round((sent / totalSentAttempted) * 100)
+            : 0;
+
+        res.json({
+            sent,
+            pending,
+            failed,
+            successRate
+        });
+    } catch (error) {
+        console.error("❌ Fetch stats failed:", error);
+        res.status(500).json({ error: "Failed to fetch stats" });
+    }
+});
+
 app.post("/schedule-email", async (req: any, res: any) => {
     try {
         const { recipient, subject, body, scheduledAt } = req.body;
