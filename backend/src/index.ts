@@ -45,7 +45,21 @@ app.use(express.json());
 
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? ["https://cold-mail-house-1.onrender.com", "https://cold-mail-house.onrender.com"] : "http://localhost:5173"),
+        origin: (origin, callback) => {
+            const allowedOrigins = [
+                "http://localhost:5173",
+                "https://cold-mail-house.onrender.com",
+                "https://cold-mail-house-1.onrender.com",
+                process.env.FRONTEND_URL
+            ].filter(Boolean);
+
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                console.error("Blocked by CORS:", origin);
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
         credentials: true
     })
 );
