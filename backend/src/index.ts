@@ -22,10 +22,20 @@ if (!process.env.REDIS_URL) {
 
 if (!process.env.ACCESS_TOKEN_SECRET) {
     console.error("❌ ACCESS_TOKEN_SECRET is missing");
+    process.exit(1);
 }
 
 if (!process.env.REFRESH_TOKEN_SECRET) {
     console.error("❌ REFRESH_TOKEN_SECRET is missing");
+    process.exit(1);
+}
+
+if (!process.env.ACCESS_TOKEN_EXPIRY) {
+    console.warn("⚠️ ACCESS_TOKEN_EXPIRY is missing, using default: 15m");
+}
+
+if (!process.env.REFRESH_TOKEN_EXPIRY) {
+    console.warn("⚠️ REFRESH_TOKEN_EXPIRY is missing, using default: 7d");
 }
 
 /* =====================
