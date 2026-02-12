@@ -29,7 +29,6 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon: 
                         {trend === 'up' && '+'}
                         {change}
                     </span>
-                    <span className="text-slate-500 dark:text-slate-400 ml-1">from last month</span>
                 </div>
             )}
         </div>
