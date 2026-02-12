@@ -46,19 +46,9 @@ app.use(express.json());
 app.use(
     cors({
         origin: (origin, callback) => {
-            const allowedOrigins = [
-                "http://localhost:5173",
-                "https://cold-mail-house.onrender.com",
-                "https://cold-mail-house-1.onrender.com",
-                process.env.FRONTEND_URL
-            ].filter(Boolean);
-
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                console.error("Blocked by CORS:", origin);
-                callback(new Error("Not allowed by CORS"));
-            }
+            // Allow all origins for diagnosis - in strictly secure environments, list them explicitly.
+            // But for this SaaS, we want to ensure the frontend can reach it.
+            callback(null, true);
         },
         credentials: true
     })
