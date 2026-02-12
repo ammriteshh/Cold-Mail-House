@@ -1,13 +1,14 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { prisma } from '../db/prisma';
 import { emailQueue } from '../queues/emailQueue';
+import { AuthRequest } from '../middleware/authMiddleware';
 
-export const scheduleEmail = async (req: Request, res: Response) => {
+export const scheduleEmail = async (req: AuthRequest, res: Response) => {
     try {
         const { recipient, subject, body, scheduledAt } = req.body;
-        const senderId = "default-user"; // Replace with actual auth user ID when available
+        const senderId = req.user!.userId;
 
-        if (!recipient || !subject || !body || !senderId) {
+        if (!recipient || !subject || !body) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
@@ -35,6 +36,7 @@ export const scheduleEmail = async (req: Request, res: Response) => {
             {
                 delay: Math.max(0, delay),
                 removeOnComplete: true,
+                removeOnFail: false,
                 jobId: job.id.toString()
             }
         );
@@ -47,9 +49,9 @@ export const scheduleEmail = async (req: Request, res: Response) => {
     }
 };
 
-export const getJobs = async (req: Request, res: Response) => {
+export const getJobs = async (req: AuthRequest, res: Response) => {
     try {
-        const userId = "default-user";
+        const userId = req.user!.userId;
         const jobs = await prisma.job.findMany({
             where: { senderId: userId },
             orderBy: { createdAt: "desc" },

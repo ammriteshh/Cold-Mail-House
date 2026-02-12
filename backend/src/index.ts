@@ -20,6 +20,14 @@ if (!process.env.REDIS_URL) {
     console.error("❌ REDIS_URL is missing");
 }
 
+if (!process.env.ACCESS_TOKEN_SECRET) {
+    console.error("❌ ACCESS_TOKEN_SECRET is missing");
+}
+
+if (!process.env.REFRESH_TOKEN_SECRET) {
+    console.error("❌ REFRESH_TOKEN_SECRET is missing");
+}
+
 /* =====================
    MIDDLEWARE
 ===================== */
@@ -37,9 +45,14 @@ app.use(
 ===================== */
 import jobRoutes from "./routes/jobRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
+import authRoutes from "./routes/authRoutes";
+import { authenticateUser } from "./middleware/authMiddleware";
 
-app.use("/", jobRoutes);
-app.use("/api", analyticsRoutes); // Prefix analytics with /api as requested
+app.use("/auth", authRoutes); // Public auth routes
+
+// Protected routes
+app.use("/", authenticateUser, jobRoutes);
+app.use("/api", authenticateUser, analyticsRoutes);
 
 /* =====================
    GLOBAL ERROR HANDLER
