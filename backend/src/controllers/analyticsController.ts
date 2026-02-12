@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { prisma } from '../db/prisma';
+import { AuthRequest } from '../middleware/authMiddleware';
 
-export const getAnalytics = async (req: Request, res: Response) => {
+export const getAnalytics = async (req: AuthRequest, res: Response) => {
     try {
-        const userId = "default-user";
+        const userId = req.user!.userId;
 
         // Count jobs by status
         // status: COMPLETED, PENDING, FAILED

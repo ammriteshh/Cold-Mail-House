@@ -25,6 +25,7 @@ model Job {
   
   // Metadata for Sender/Rate Limits
   senderId        String    
+  user            User      @relation(fields: [senderId], references: [id])
   
   // Job Control
   status          JobStatus @default(PENDING)
@@ -46,10 +47,14 @@ model Job {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  googleId  String   @unique
-  email     String   @unique
-  name      String
-  avatar    String?
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String   // Hashed password
+  name          String
+  role          String   @default("user") // "user" | "admin"
+  refreshToken  String?  // Stored securely
+  avatar        String?
+  createdAt     DateTime @default(now())
+  
+  jobs          Job[]
 }
