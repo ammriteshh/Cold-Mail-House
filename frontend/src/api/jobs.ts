@@ -1,18 +1,12 @@
-import axios from 'axios';
+import { client } from './client';
 import type { CreateJobDto, Job } from '../types/job';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-const api = axios.create({
-    baseURL: API_URL,
-});
-
 export const scheduleEmail = async (data: CreateJobDto) => {
-    return api.post<{ message: string; jobId: number }>('/schedule-email', data);
+    return client.post<{ message: string; jobId: number }>('/schedule-email', data);
 };
 
 export const getJobs = async () => {
-    return api.get<Job[]>('/jobs');
+    return client.get<Job[]>('/jobs');
 };
 export interface JobStats {
     sent: number;
@@ -22,7 +16,7 @@ export interface JobStats {
 }
 
 export const getJobStats = async () => {
-    const res = await api.get<{ totalSent: number, totalPending: number, totalFailed: number, successRate: number }>('/api/analytics');
+    const res = await client.get<{ totalSent: number, totalPending: number, totalFailed: number, successRate: number }>('/api/analytics');
     // Map new API response to old interface to keep frontend working
     return {
         data: {
