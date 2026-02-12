@@ -63,7 +63,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const register = async (name: string, email: string, password: string) => {
-        await client.post('/auth/register', { name, email, password });
+        console.log("AuthContext: register called with", { name, email });
+        try {
+            const res = await client.post('/auth/register', { name, email, password });
+            console.log("AuthContext: register response", res);
+        } catch (error) {
+            console.error("AuthContext: register error", error);
+            throw error;
+        }
     };
 
     const logout = async () => {
