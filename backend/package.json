@@ -38,10 +38,9 @@
     "pg": "^8.18.0",
     "prisma": "^7.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
-  },
-  "devDependencies": {
+    "typescript": "^5.9.3",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10"
-  }
+  },
+  "devDependencies": {}
 }
