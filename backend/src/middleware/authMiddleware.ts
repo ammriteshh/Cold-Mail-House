@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt';
+import { AppError } from '../utils/AppError';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -12,14 +13,14 @@ export const authenticateUser = (req: AuthRequest, res: Response, next: NextFunc
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Unauthorized: No token provided' });
+        return next(new AppError('Unauthorized: No token provided', 401));
     }
 
     const token = authHeader.split(' ')[1];
     const payload = verifyAccessToken(token);
 
     if (!payload) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        return next(new AppError('Unauthorized: Invalid token', 401));
     }
 
     req.user = {
