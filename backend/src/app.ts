@@ -70,6 +70,10 @@ app.use(passport.session());
  */
 
 // Public Routes
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 app.use("/auth", authRoutes);
 
 
