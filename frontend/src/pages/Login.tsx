@@ -1,9 +1,9 @@
-import React from 'react';
+
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
 const Login = () => {
     // Error state might still be useful if we want to pass error params from URL later
-    const error = '';
+
 
 
 
@@ -15,7 +15,7 @@ const Login = () => {
                     <p className="text-gray-400">Sign in to Cold Mail House</p>
                 </div>
 
-                {error && <div className="p-3 text-red-400 bg-red-900/30 border border-red-800 rounded text-center text-sm">{error}</div>}
+
 
                 <div className="space-y-4">
                     <GoogleLoginButton />
