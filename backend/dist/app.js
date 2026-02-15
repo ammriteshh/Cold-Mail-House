@@ -14,26 +14,34 @@ const authMiddleware_1 = require("./middleware/authMiddleware");
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
 exports.app = app;
-/* =====================
-   MIDDLEWARE
-   ===================== */
+/**
+ * =======================
+ * 🛠️ MIDDLEWARE
+ * =======================
+ */
 app.use(express_1.default.json());
+// CORS Configuration
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
-        // Allow all origins for diagnosis - in strictly secure environments, list them explicitly.
-        // But for this SaaS, we want to ensure the frontend can reach it.
+        // Allow all origins for diagnosis. 
+        // In production, simpler logic or strict allowlist can be applied here.
         callback(null, true);
     },
     credentials: true
 }));
-/* =====================
-   ROUTES
-   ===================== */
-app.use("/auth", authRoutes_1.default); // Public auth routes
-// Protected routes
+/**
+ * =======================
+ * 🛣️ ROUTES
+ * =======================
+ */
+// Public Routes
+app.use("/auth", authRoutes_1.default);
+// Protected Routes
 app.use("/", authMiddleware_1.authenticateUser, jobRoutes_1.default);
 app.use("/api", authMiddleware_1.authenticateUser, analyticsRoutes_1.default);
-/* =====================
-   GLOBAL ERROR HANDLER
-   ===================== */
+/**
+ * =======================
+ * ⚠️ ERROR HANDLING
+ * =======================
+ */
 app.use(errorHandler_1.globalErrorHandler);

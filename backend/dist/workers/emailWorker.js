@@ -10,6 +10,8 @@ const prisma_1 = require("../db/prisma");
 const emailService_1 = require("../services/emailService");
 const config_1 = require("../config");
 const emailQueue_1 = require("../queues/emailQueue");
+const ONE_HOUR_SECONDS = 3600;
+const RATE_LIMIT_WINDOW = ONE_HOUR_SECONDS + 60; // slightly more than an hour
 /**
  * Helper to get the start of the next hour in milliseconds.
  */
@@ -19,12 +21,16 @@ const getNextHourDelay = () => {
     nextHour.setHours(now.getHours() + 1, 0, 0, 0); // Top of next hour
     return nextHour.getTime() - now.getTime();
 };
+/**
+ * Checks if the sender has exceeded their hourly rate limit.
+ */
 const checkSenderRateLimit = async (senderId, jobId, job) => {
     const currentHour = new Date().toISOString().slice(0, 13); // Format: "YYYY-MM-DDTHH"
     const rateLimitKey = `rate-limit:sender:${senderId}:${currentHour}`;
     const currentCount = await redis_1.default.incr(rateLimitKey);
+    // Set expiry on first increment
     if (currentCount === 1) {
-        await redis_1.default.expire(rateLimitKey, 3600 + 60);
+        await redis_1.default.expire(rateLimitKey, RATE_LIMIT_WINDOW);
     }
     if (currentCount > config_1.config.rateLimit.maxPerSenderPerHour) {
         console.warn(`Rate limit exceeded for sender ${senderId}. Rescheduling Job ${jobId}.`);
@@ -33,15 +39,26 @@ const checkSenderRateLimit = async (senderId, jobId, job) => {
         throw new Error(`RateLimit: Moved to delayed (Queue Order)`);
     }
 };
+/**
+ * Updates the job status in the database.
+ */
 const updateJobStatus = async (jobId, status, failureReason) => {
-    await prisma_1.prisma.job.update({
-        where: { id: jobId },
-        data: {
-            status,
-            ...(status === 'COMPLETED' ? { sentAt: new Date() } : { failureReason }),
-        },
-    });
+    try {
+        await prisma_1.prisma.job.update({
+            where: { id: jobId },
+            data: {
+                status,
+                ...(status === 'COMPLETED' ? { sentAt: new Date() } : { failureReason }),
+            },
+        });
+    }
+    catch (error) {
+        console.error(`Failed to update job status for Job ${jobId}:`, error);
+    }
 };
+/**
+ * Main processor for email jobs.
+ */
 const processEmailJob = async (job) => {
     const { jobId } = job.data;
     const emailJob = await prisma_1.prisma.job.findUnique({ where: { id: jobId } });
@@ -62,7 +79,7 @@ const processEmailJob = async (job) => {
     catch (error) {
         console.error(`Failed to send email for Job ${jobId}:`, error);
         await updateJobStatus(jobId, 'FAILED', error.message || 'Unknown error');
-        throw error;
+        throw error; // Rethrow to let BullMQ handle retry/failure logic
     }
 };
 exports.emailWorker = new bullmq_1.Worker(emailQueue_1.EMAIL_QUEUE_NAME, processEmailJob, {

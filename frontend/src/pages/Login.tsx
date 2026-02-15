@@ -11,17 +11,13 @@ const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Login form submitted");
-        console.log("Form data:", { email, password: '***' }); // Don't log actual password
-        setError(''); // Clear previous errors
+        setError('');
 
         try {
-            console.log("Calling login function...");
             await login(email, password);
-            console.log("Login success, navigating to dashboard...");
             navigate('/');
         } catch (err: any) {
-            console.error("Login failed in component:", err);
+            console.error("Login Error:", err);
             setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
         }
     };

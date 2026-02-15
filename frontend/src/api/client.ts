@@ -1,18 +1,19 @@
 import axios from 'axios';
 
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:3000' : 'https://cold-mail-house-1.onrender.com'); // Fallback to likely prod URL
-console.log("API_URL configured as:", API_URL);
+const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:3000' : 'https://cold-mail-house-1.onrender.com');
 
 export const client = axios.create({
     baseURL: API_URL,
     withCredentials: true, // Important for sending cookies
 });
 
-// Request Interceptor: Attach Access Token
+/**
+ * Request Interceptor: Attach Access Token
+ */
 client.interceptors.request.use(
     (config) => {
-        const token = window.accessToken; // Access token stored in memory (global var or context)
+        const token = window.accessToken; // Access token stored in memory
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -21,7 +22,9 @@ client.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 & Refresh
+/**
+ * Response Interceptor: Handle 401 & Refresh Token Rotation
+ */
 client.interceptors.response.use(
     (response) => response,
     async (error) => {

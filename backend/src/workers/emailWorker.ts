@@ -5,6 +5,9 @@ import { sendEmail } from '../services/emailService';
 import { config } from '../config';
 import { EMAIL_QUEUE_NAME } from '../queues/emailQueue';
 
+const ONE_HOUR_SECONDS = 3600;
+const RATE_LIMIT_WINDOW = ONE_HOUR_SECONDS + 60; // slightly more than an hour
+
 /**
  * Helper to get the start of the next hour in milliseconds.
  */
@@ -15,13 +18,18 @@ const getNextHourDelay = (): number => {
     return nextHour.getTime() - now.getTime();
 };
 
+/**
+ * Checks if the sender has exceeded their hourly rate limit.
+ */
 const checkSenderRateLimit = async (senderId: string, jobId: number, job: Job) => {
     const currentHour = new Date().toISOString().slice(0, 13); // Format: "YYYY-MM-DDTHH"
     const rateLimitKey = `rate-limit:sender:${senderId}:${currentHour}`;
 
     const currentCount = await connection.incr(rateLimitKey);
+
+    // Set expiry on first increment
     if (currentCount === 1) {
-        await connection.expire(rateLimitKey, 3600 + 60);
+        await connection.expire(rateLimitKey, RATE_LIMIT_WINDOW);
     }
 
     if (currentCount > config.rateLimit.maxPerSenderPerHour) {
@@ -32,20 +40,31 @@ const checkSenderRateLimit = async (senderId: string, jobId: number, job: Job) =
     }
 };
 
+/**
+ * Updates the job status in the database.
+ */
 const updateJobStatus = async (jobId: number, status: 'COMPLETED' | 'FAILED', failureReason?: string) => {
-    await prisma.job.update({
-        where: { id: jobId },
-        data: {
-            status,
-            ...(status === 'COMPLETED' ? { sentAt: new Date() } : { failureReason }),
-        },
-    });
+    try {
+        await prisma.job.update({
+            where: { id: jobId },
+            data: {
+                status,
+                ...(status === 'COMPLETED' ? { sentAt: new Date() } : { failureReason }),
+            },
+        });
+    } catch (error) {
+        console.error(`Failed to update job status for Job ${jobId}:`, error);
+    }
 };
 
+/**
+ * Main processor for email jobs.
+ */
 const processEmailJob = async (job: Job) => {
     const { jobId } = job.data;
 
     const emailJob = await prisma.job.findUnique({ where: { id: jobId } });
+
     if (!emailJob) {
         console.error(`Job ${jobId} not found in DB`);
         return;
@@ -65,7 +84,7 @@ const processEmailJob = async (job: Job) => {
     } catch (error: any) {
         console.error(`Failed to send email for Job ${jobId}:`, error);
         await updateJobStatus(jobId, 'FAILED', error.message || 'Unknown error');
-        throw error;
+        throw error; // Rethrow to let BullMQ handle retry/failure logic
     }
 };
 

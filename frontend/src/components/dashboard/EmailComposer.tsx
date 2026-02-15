@@ -18,7 +18,8 @@ const EmailComposer: React.FC = () => {
             setMsg({ type: 'success', text: 'Email scheduled successfully!' });
             reset();
         } catch (err) {
-            setMsg({ type: 'error', text: 'Failed to schedule email.' });
+            console.error("Schedule Error:", err);
+            setMsg({ type: 'error', text: 'Failed to schedule email. Please try again.' });
         } finally {
             setLoading(false);
         }

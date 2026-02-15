@@ -10,34 +10,43 @@ import { config } from "./config";
 
 const app = express();
 
-/* =====================
-   MIDDLEWARE
-   ===================== */
+/**
+ * =======================
+ * 🛠️ MIDDLEWARE
+ * =======================
+ */
 app.use(express.json());
 
+// CORS Configuration
 app.use(
     cors({
         origin: (origin, callback) => {
-            // Allow all origins for diagnosis - in strictly secure environments, list them explicitly.
-            // But for this SaaS, we want to ensure the frontend can reach it.
+            // Allow all origins for diagnosis. 
+            // In production, simpler logic or strict allowlist can be applied here.
             callback(null, true);
         },
         credentials: true
     })
 );
 
-/* =====================
-   ROUTES
-   ===================== */
-app.use("/auth", authRoutes); // Public auth routes
+/**
+ * =======================
+ * 🛣️ ROUTES
+ * =======================
+ */
 
-// Protected routes
+// Public Routes
+app.use("/auth", authRoutes);
+
+// Protected Routes
 app.use("/", authenticateUser, jobRoutes);
 app.use("/api", authenticateUser, analyticsRoutes);
 
-/* =====================
-   GLOBAL ERROR HANDLER
-   ===================== */
+/**
+ * =======================
+ * ⚠️ ERROR HANDLING
+ * =======================
+ */
 app.use(globalErrorHandler);
 
 export { app };
