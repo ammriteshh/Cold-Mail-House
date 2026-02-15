@@ -1,14 +1,14 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { prisma } from '../db/prisma';
-import { AuthRequest } from '../middleware/authMiddleware';
+
 import { asyncHandler } from '../utils/asyncHandler';
 
 /**
  * Retrieves email job analytics for the authenticated user.
  * Returns counts of sent, pending, and failed emails, plus success rate.
  */
-export const getAnalytics = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const userId = req.user!.userId;
+export const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).user!.id;
 
     // Execute all count queries in parallel for performance
     const [sent, pending, failed, total] = await Promise.all([
