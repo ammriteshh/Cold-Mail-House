@@ -30,19 +30,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const { data } = await client.post('/auth/refresh');
                 window.accessToken = data.accessToken;
 
-                // Ideally, we'd have a /me endpoint to get user info, 
-                // but for now we decode from token or store basic info if available. 
-                // Let's assume refresh returns user info or we just set auth state.
-                // For better UX, let's fetch user profile if possible. 
-                // Since our refresh endpoint only returns accessToken, let's just mark as authenticated.
-                // A better approach: add /auth/me endpoint. For now, we'll try to decode or just assume auth.
-                // WAIT: The login response returns user info. We should persist that or fetch it.
-                // Let's rely on validation for now.
-
+                // Decode simple payload from token for UI state
                 const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
                 setUser({
                     id: payload.userId,
-                    name: payload.name || 'User', // Token might not have name, handled in Login
+                    name: payload.name || 'User',
                     email: payload.email || '',
                     role: payload.role
                 });
@@ -57,25 +49,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = async (email: string, password: string) => {
-        console.log("AuthContext: login called with", { email });
         try {
             const { data } = await client.post('/auth/login', { email, password });
-            console.log("AuthContext: login success, response data:", data);
             window.accessToken = data.accessToken;
             setUser(data.user);
         } catch (error) {
-            console.error("AuthContext: login error:", error);
+            console.error("Login Failed:", error);
             throw error;
         }
     };
 
     const register = async (name: string, email: string, password: string) => {
-        console.log("AuthContext: register called with", { name, email });
         try {
-            const res = await client.post('/auth/register', { name, email, password });
-            console.log("AuthContext: register response", res);
+            await client.post('/auth/register', { name, email, password });
         } catch (error) {
-            console.error("AuthContext: register error", error);
+            console.error("Registration Failed:", error);
             throw error;
         }
     };

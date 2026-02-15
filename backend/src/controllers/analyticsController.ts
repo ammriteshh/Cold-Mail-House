@@ -3,11 +3,14 @@ import { prisma } from '../db/prisma';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { asyncHandler } from '../utils/asyncHandler';
 
+/**
+ * Retrieves email job analytics for the authenticated user.
+ * Returns counts of sent, pending, and failed emails, plus success rate.
+ */
 export const getAnalytics = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId;
 
-    // Count jobs by status
-    // status: COMPLETED, PENDING, FAILED
+    // Execute all count queries in parallel for performance
     const [sent, pending, failed, total] = await Promise.all([
         prisma.job.count({ where: { senderId: userId, status: "COMPLETED" } }),
         prisma.job.count({ where: { senderId: userId, status: "PENDING" } }),

@@ -2,30 +2,7 @@ import { useEffect, useState } from 'react';
 import { getJobs } from '../../api/jobs';
 import type { Job } from '../../types/job';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, XCircle } from 'lucide-react';
-
-const StatusBadge = ({ status }: { status: string }) => {
-    const styles = {
-        PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900",
-        SENT: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-900",
-        FAILED: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-900",
-    };
-
-    const icons = {
-        PENDING: <Clock className="w-3 h-3 mr-1" />,
-        SENT: <CheckCircle className="w-3 h-3 mr-1" />,
-        FAILED: <XCircle className="w-3 h-3 mr-1" />,
-    };
-
-    const key = status as keyof typeof styles;
-
-    return (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[key] || "bg-gray-100 text-gray-800"}`}>
-            {icons[key]}
-            {status}
-        </span>
-    );
-};
+import StatusBadge from '../StatusBadge';
 
 const ScheduledTable: React.FC = () => {
     const [jobs, setJobs] = useState<Job[]>([]);

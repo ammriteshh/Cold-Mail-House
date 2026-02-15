@@ -6,9 +6,9 @@ const Sidebar = () => {
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-        { icon: Mail, label: 'Scheduled', path: '/scheduled' }, // Placeholder path for now
-        { icon: FileText, label: 'Templates', path: '/templates' }, // Placeholder
-        { icon: Settings, label: 'Settings', path: '/settings' }, // Placeholder
+        { icon: Mail, label: 'Scheduled', path: '/scheduled' },
+        { icon: FileText, label: 'Templates', path: '/templates' },
+        { icon: Settings, label: 'Settings', path: '/settings' },
     ];
 
     return (
@@ -38,8 +38,6 @@ const Sidebar = () => {
                     );
                 })}
             </nav>
-
-
         </aside>
     );
 };

@@ -5,6 +5,9 @@ import { AuthRequest } from '../middleware/authMiddleware';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AppError } from '../utils/AppError';
 
+/**
+ * Schedules a new email job.
+ */
 export const scheduleEmail = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { recipient, subject, body, scheduledAt } = req.body;
     const senderId = req.user!.userId;
@@ -13,7 +16,7 @@ export const scheduleEmail = asyncHandler(async (req: AuthRequest, res: Response
         throw new AppError("Missing required fields: recipient, subject, or body", 400);
     }
 
-    // 1️⃣ Create job in DB
+    // 1. Create job in DB
     const job = await prisma.job.create({
         data: {
             recipient,
@@ -25,32 +28,40 @@ export const scheduleEmail = asyncHandler(async (req: AuthRequest, res: Response
         }
     });
 
-    // 2️⃣ Calculate delay
+    // 2. Calculate delay in milliseconds
     const delay = scheduledAt
         ? new Date(scheduledAt).getTime() - Date.now()
         : 0;
 
-    // 3️⃣ Queue email
+    // 3. Add to BullMQ queue
     await emailQueue.add(
         "send-email",
         { jobId: job.id },
         {
             delay: Math.max(0, delay),
             removeOnComplete: true,
-            removeOnFail: false,
-            jobId: job.id.toString()
+            removeOnFail: false, // Keep failed jobs for inspection
+            jobId: job.id.toString() // Deduplication if needed
         }
     );
 
-    res.status(201).json({ message: "Email scheduled successfully", jobId: job.id });
+    res.status(201).json({
+        message: "Email scheduled successfully",
+        jobId: job.id
+    });
 });
 
+/**
+ * Retrieves the list of jobs for the authenticated user.
+ */
 export const getJobs = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId;
+
     const jobs = await prisma.job.findMany({
         where: { senderId: userId },
         orderBy: { createdAt: "desc" },
         take: 20
     });
+
     res.json(jobs);
 });
