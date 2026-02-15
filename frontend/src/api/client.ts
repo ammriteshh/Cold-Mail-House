@@ -1,63 +1,40 @@
+
 import axios from 'axios';
 
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:3000' : 'https://cold-mail-house-1.onrender.com');
+// Detect the current environment using window.location
+const detectApiBase = () => {
+    // If we are in development (localhost), assume backend is on 3000
+    if (window.location.hostname === 'localhost') {
+        return 'http://localhost:3000';
+    }
+
+    // For production, use the relative path or deployed URL
+    // Adjust this logic based on your specific deployment setup
+    return import.meta.env.VITE_API_URL || 'https://cold-mail-house.onrender.com';
+};
 
 export const client = axios.create({
-    baseURL: API_URL,
-    withCredentials: true, // Important for sending cookies
+    baseURL: detectApiBase(),
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true // Important for sessions!
 });
 
-/**
- * Request Interceptor: Attach Access Token
- */
-client.interceptors.request.use(
-    (config) => {
-        const token = window.accessToken; // Access token stored in memory
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 /**
- * Response Interceptor: Handle 401 & Refresh Token Rotation
+ * Response Interceptor: Handle 401 Errors
+ * For session-based auth, a 401 means the session is expired or invalid.
+ * We should redirect to login.
  */
 client.interceptors.response.use(
     (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                // Attempt refresh
-                const { data } = await client.post('/auth/refresh');
-                const newAccessToken = data.accessToken;
-
-                // Update memory
-                window.accessToken = newAccessToken;
-
-                // Retry original request with new token
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                return client(originalRequest);
-            } catch (refreshError) {
-                // Refresh failed - redirect to login
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
+    (error) => {
+        if (error.response?.status === 401) {
+            // Optional: Redirect to login page if 401 received
+            // window.location.href = '/login';
         }
-
         return Promise.reject(error);
     }
 );
 
-// Declare global type for window
-declare global {
-    interface Window {
-        accessToken?: string;
-    }
-}
