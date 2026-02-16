@@ -64,6 +64,9 @@ app.use(passport_1.default.session());
  * =======================
  */
 // Public Routes
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 app.use("/auth", authRoutes_1.default);
 // Protected Routes
 app.use("/", authMiddleware_1.authenticateUser, jobRoutes_1.default);

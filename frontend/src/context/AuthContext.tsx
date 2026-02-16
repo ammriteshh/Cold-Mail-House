@@ -47,9 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.location.href = `${client.defaults.baseURL}/auth/google`;
     };
 
-    // Register is deprecated in favor of Google OAuth, but keeping interface for now to verify logic safely
+    // Register is deprecated in favor of Google OAuth, but reusing the login flow
     const register = async () => {
-        window.location.href = `${client.defaults.baseURL}/auth/google`;
+        // Same as login for OAuth
+        await login();
     };
 
     const logout = async () => {
