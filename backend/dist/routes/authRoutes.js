@@ -11,9 +11,10 @@ const router = (0, express_1.Router)();
 // Google OAuth Login
 router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
 // Google OAuth Callback
-router.get('/google/callback', passport_1.default.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-    // Successful authentication, redirect home.
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard` || 'http://localhost:5173/dashboard');
+router.get('/google/callback', passport_1.default.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login` }), (req, res) => {
+    // Successful authentication, redirect to frontend root (which shows Dashboard)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/`);
 });
 router.post('/logout', authController_1.logout);
 router.get('/me', authMiddleware_1.authenticateUser, authController_1.getMe);
