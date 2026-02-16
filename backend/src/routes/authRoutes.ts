@@ -7,12 +7,35 @@ import { authenticateUser } from '../middleware/authMiddleware';
 const router = Router();
 
 // Google OAuth Login
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// Google OAuth Login
+router.get('/google', (req, res, next) => {
+    console.log("✅ [DEBUG] /auth/google hit");
+    next();
+}, passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 // Google OAuth Callback
 router.get(
     '/google/callback',
-    passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login` }),
+    (req, res, next) => {
+        passport.authenticate('google', (err: any, user: any, info: any) => {
+            if (err) {
+                console.error("❌ [DEBUG] Passport Error:", err);
+                return res.status(500).json({ error: "Authentication failed", details: err.message });
+            }
+            if (!user) {
+                console.error("❌ [DEBUG] No user returned:", info);
+                return res.status(401).json({ error: "Authentication failed", details: "No user returned" });
+            }
+
+            req.logIn(user, (err) => {
+                if (err) {
+                    console.error("❌ [DEBUG] Login Error:", err);
+                    return res.status(500).json({ error: "Login failed", details: err.message });
+                }
+                next(); // Continue to success handler
+            });
+        })(req, res, next);
+    },
     (req, res) => {
         // Successful authentication
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';

@@ -34,7 +34,7 @@ app.set('trust proxy', 1);
 // CORS Configuration
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || "http://localhost:5173", // Explicitly set origin
+        origin: "https://cold-mail-house-1.onrender.com", // Explicitly set to frontend URL
         credentials: true
     })
 );
@@ -55,7 +55,7 @@ app.use(
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            // domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined // Try enabling if cross-subdomain fails, but careful with PSL
+            domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined
         },
     })
 );
