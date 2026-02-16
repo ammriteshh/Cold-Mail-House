@@ -5,14 +5,17 @@ import { prisma } from '../db/prisma';
 import { config } from '../config';
 
 passport.serializeUser((user: any, done) => {
+    console.log("✅ [DEBUG] Serializing User:", user.id);
     done(null, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
     try {
+        console.log("✅ [DEBUG] Deserializing User ID:", id);
         const user = await prisma.user.findUnique({ where: { id } });
         done(null, user);
     } catch (error) {
+        console.error("❌ [DEBUG] Deserialize Error:", error);
         done(error, null);
     }
 });
@@ -26,6 +29,9 @@ passport.use(
             passReqToCallback: true,
         },
         async (req: any, accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+            console.log("✅ [DEBUG] Google Strategy Callback");
+            console.log("   - Profile ID:", profile.id);
+            console.log("   - Email:", profile.emails?.[0]?.value);
             try {
                 // 1. Check if user exists by Google ID
                 const existingUser = await prisma.user.findUnique({
@@ -33,6 +39,7 @@ passport.use(
                 });
 
                 if (existingUser) {
+                    console.log("   - User found by Google ID:", existingUser.id);
                     return done(null, existingUser);
                 }
 
@@ -43,6 +50,7 @@ passport.use(
                     });
 
                     if (existingEmailUser) {
+                        console.log("   - User found by Email, linking account:", existingEmailUser.id);
                         // Link Google ID to existing user
                         const user = await prisma.user.update({
                             where: { id: existingEmailUser.id },
@@ -52,6 +60,7 @@ passport.use(
                     }
 
                     // 3. Create new user
+                    console.log("   - Creating new user");
                     const newUser = await prisma.user.create({
                         data: {
                             googleId: profile.id,
@@ -69,6 +78,7 @@ passport.use(
                 return done(new Error("No email found in profile"), undefined);
 
             } catch (error) {
+                console.error("❌ [DEBUG] Google Strategy Error:", error);
                 return done(error, undefined);
             }
         }

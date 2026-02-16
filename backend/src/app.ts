@@ -54,7 +54,8 @@ app.use(
             secure: process.env.NODE_ENV === "production", // secure in prod
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            // domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined // Try enabling if cross-subdomain fails, but careful with PSL
         },
     })
 );

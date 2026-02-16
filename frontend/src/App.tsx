@@ -20,6 +20,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
           {/* Redirect generic 404s to root */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
