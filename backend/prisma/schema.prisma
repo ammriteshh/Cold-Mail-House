@@ -49,10 +49,12 @@ model Job {
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
-  password      String   // Hashed password
-  name          String
+  password      String?  // Made optional for OAuth users
+  name          String?  // Made optional
+  googleId      String?  @unique // New field for Google OAuth
+  authProvider  String?  // "google" or others
   role          String   @default("user") // "user" | "admin"
-  refreshToken  String?  // Stored securely
+  refreshToken  String?  // Stored securely, still useful if we keep some hybrid auth later or just for session meta
   avatar        String?
   createdAt     DateTime @default(now())
   
