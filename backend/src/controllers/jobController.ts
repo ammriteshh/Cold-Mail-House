@@ -1,16 +1,16 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { prisma } from '../db/prisma';
 import { emailQueue } from '../queues/emailQueue';
-import { AuthRequest } from '../middleware/authMiddleware';
+
 import { asyncHandler } from '../utils/asyncHandler';
 import { AppError } from '../utils/AppError';
 
 /**
  * Schedules a new email job.
  */
-export const scheduleEmail = asyncHandler(async (req: AuthRequest, res: Response) => {
+export const scheduleEmail = asyncHandler(async (req: Request, res: Response) => {
     const { recipient, subject, body, scheduledAt } = req.body;
-    const senderId = req.user!.userId;
+    const senderId = (req as any).user!.id;
 
     if (!recipient || !subject || !body) {
         throw new AppError("Missing required fields: recipient, subject, or body", 400);
@@ -54,8 +54,8 @@ export const scheduleEmail = asyncHandler(async (req: AuthRequest, res: Response
 /**
  * Retrieves the list of jobs for the authenticated user.
  */
-export const getJobs = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const userId = req.user!.userId;
+export const getJobs = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).user!.id;
 
     const jobs = await prisma.job.findMany({
         where: { senderId: userId },

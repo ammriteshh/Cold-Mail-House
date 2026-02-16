@@ -36,15 +36,18 @@ You need to set up environment variables in both the `backend` and `frontend` di
 
 **Backend (.env)**
 Create a `.env` file in the `backend` folder with these variables:
-- `PORT`
-- `DATABASE_URL`
-- `REDIS_HOST` & `REDIS_PORT`
-- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`
-- `JWT_SECRET`
+- `PORT` (default: 3000)
+- `DATABASE_URL` (PostgreSQL connection string)
+- `REDIS_HOST` & `REDIS_PORT` (optional, for queue management)
+- `GOOGLE_CLIENT_ID` (from Google Cloud Console)
+- `GOOGLE_CLIENT_SECRET` (from Google Cloud Console)
+- `GOOGLE_CALLBACK_URL` (e.g., `http://localhost:3000/auth/google/callback` for dev, or your production URL)
+- `SESSION_SECRET` (random secret string for session encryption)
+- `FRONTEND_URL` (e.g., `http://localhost:5173` for dev, or your production frontend URL)
 
 **Frontend (.env)**
 Create a `.env` file in the `frontend` folder:
-- `VITE_API_URL`
+- `VITE_API_URL` (optional, defaults to `http://localhost:3000` in dev or `https://cold-mail-house.onrender.com` in production)
 
 ### Start the Application
 Run both the frontend and backend servers with a single command:

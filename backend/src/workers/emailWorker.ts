@@ -97,9 +97,9 @@ export const emailWorker = new Worker(EMAIL_QUEUE_NAME, processEmailJob, {
     },
 });
 
-emailWorker.on('completed', (job) => {
-    console.log(`Queue Job ${job.id} completed!`);
-});
+// emailWorker.on('completed', (job) => {
+//     console.log(`Queue Job ${job.id} completed!`);
+// });
 
 emailWorker.on('failed', (job, err) => {
     if (err.message.includes('RateLimit')) {

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { client } from '../api/client';
 
@@ -6,14 +7,16 @@ interface User {
     name: string;
     email: string;
     role: string;
+    googleId?: string;
+    avatar?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<void>;
-    register: (name: string, email: string, password: string) => Promise<void>;
+    login: (email?: string, password?: string) => Promise<void>;
+    register: (name?: string, email?: string, password?: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -23,21 +26,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Check auth on mount (refresh token)
+    // Check auth on mount (session)
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const { data } = await client.post('/auth/refresh');
-                window.accessToken = data.accessToken;
-
-                // Decode simple payload from token for UI state
-                const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
-                setUser({
-                    id: payload.userId,
-                    name: payload.name || 'User',
-                    email: payload.email || '',
-                    role: payload.role
-                });
+                const { data } = await client.get('/auth/me');
+                setUser(data.user);
             } catch (error) {
                 setUser(null);
             } finally {
@@ -48,32 +42,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkAuth();
     }, []);
 
-    const login = async (email: string, password: string) => {
-        try {
-            const { data } = await client.post('/auth/login', { email, password });
-            window.accessToken = data.accessToken;
-            setUser(data.user);
-        } catch (error) {
-            console.error("Login Failed:", error);
-            throw error;
-        }
+    const login = async () => {
+        // Redirect to backend Google Auth
+        window.location.href = `${client.defaults.baseURL}/auth/google`;
     };
 
-    const register = async (name: string, email: string, password: string) => {
-        try {
-            await client.post('/auth/register', { name, email, password });
-        } catch (error) {
-            console.error("Registration Failed:", error);
-            throw error;
-        }
+    // Register is deprecated in favor of Google OAuth, but reusing the login flow
+    const register = async () => {
+        // Same as login for OAuth
+        await login();
     };
 
     const logout = async () => {
         try {
             await client.post('/auth/logout');
-        } finally {
-            window.accessToken = undefined;
             setUser(null);
+            // Optional: redirect to login page or home
+            window.location.href = '/login';
+        } catch (error) {
+            console.error("Logout failed", error);
         }
     };
 
@@ -91,3 +78,4 @@ export const useAuth = () => {
     }
     return context;
 };
+

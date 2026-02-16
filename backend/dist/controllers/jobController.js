@@ -10,7 +10,7 @@ const AppError_1 = require("../utils/AppError");
  */
 exports.scheduleEmail = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const { recipient, subject, body, scheduledAt } = req.body;
-    const senderId = req.user.userId;
+    const senderId = req.user.id;
     if (!recipient || !subject || !body) {
         throw new AppError_1.AppError("Missing required fields: recipient, subject, or body", 400);
     }
@@ -45,7 +45,7 @@ exports.scheduleEmail = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
  * Retrieves the list of jobs for the authenticated user.
  */
 exports.getJobs = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const jobs = await prisma_1.prisma.job.findMany({
         where: { senderId: userId },
         orderBy: { createdAt: "desc" },
