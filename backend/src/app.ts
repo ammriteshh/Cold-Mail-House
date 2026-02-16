@@ -28,14 +28,13 @@ const pool = new Pool({
  */
 app.use(express.json());
 
+// Trust Proxy for Render/Heroku (Required for secure cookies behind split load balancers)
+app.set('trust proxy', 1);
+
 // CORS Configuration
 app.use(
     cors({
-        origin: (origin, callback) => {
-            // Allow all origins for diagnosis. 
-            // In production, simpler logic or strict allowlist can be applied here.
-            callback(null, true);
-        },
+        origin: process.env.FRONTEND_URL || "http://localhost:5173", // Explicitly set origin
         credentials: true
     })
 );
@@ -45,7 +44,7 @@ app.use(
     session({
         store: new pgStore({
             pool: pool,
-            tableName: "session", // Use default table name 'session'
+            tableName: "session",
             createTableIfMissing: true
         }),
         secret: process.env.SESSION_SECRET || "supersecret",

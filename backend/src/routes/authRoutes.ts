@@ -14,9 +14,18 @@ router.get(
     '/google/callback',
     passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login` }),
     (req, res) => {
-        // Successful authentication, redirect to frontend root (which shows Dashboard)
+        // Successful authentication
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${frontendUrl}/`);
+
+        // Explicitly save session before redirect to ensure cookie is set
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.redirect(`${frontendUrl}/login?error=session_save_failed`);
+            }
+            // Redirect to dashboard
+            res.redirect(`${frontendUrl}/dashboard`);
+        });
     }
 );
 
