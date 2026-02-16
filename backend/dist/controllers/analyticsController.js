@@ -8,7 +8,7 @@ const asyncHandler_1 = require("../utils/asyncHandler");
  * Returns counts of sent, pending, and failed emails, plus success rate.
  */
 exports.getAnalytics = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     // Execute all count queries in parallel for performance
     const [sent, pending, failed, total] = await Promise.all([
         prisma_1.prisma.job.count({ where: { senderId: userId, status: "COMPLETED" } }),
