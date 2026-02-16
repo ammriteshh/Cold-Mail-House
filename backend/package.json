@@ -2,7 +2,7 @@
   "name": "cold-mail-house",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "npx -y tsx src/server.ts",
     "build": "node node_modules/prisma/build/index.js generate && tsc",
