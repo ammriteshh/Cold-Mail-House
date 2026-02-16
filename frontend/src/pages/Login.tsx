@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
 const Login = () => {
     // Error state might still be useful if we want to pass error params from URL later
+<<<<<<< HEAD
     const error = '';
+=======
+
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
 
 
 
@@ -15,7 +23,11 @@ const Login = () => {
                     <p className="text-gray-400">Sign in to Cold Mail House</p>
                 </div>
 
+<<<<<<< HEAD
                 {error && <div className="p-3 text-red-400 bg-red-900/30 border border-red-800 rounded text-center text-sm">{error}</div>}
+=======
+
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
 
                 <div className="space-y-4">
                     <GoogleLoginButton />

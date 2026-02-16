@@ -52,6 +52,10 @@ model User {
   password      String?  // Made optional for OAuth users
   name          String?  // Made optional
   googleId      String?  @unique // New field for Google OAuth
+<<<<<<< HEAD
+=======
+  authProvider  String?  // "google" or others
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
   role          String   @default("user") // "user" | "admin"
   refreshToken  String?  // Stored securely, still useful if we keep some hybrid auth later or just for session meta
   avatar        String?

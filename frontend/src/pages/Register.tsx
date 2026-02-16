@@ -1,10 +1,8 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
 const Register = () => {
-    const error = '';
-
 
 
     return (
@@ -15,7 +13,7 @@ const Register = () => {
                     <p className="text-gray-400">Join Cold Mail House</p>
                 </div>
 
-                {error && <div className="p-3 text-red-400 bg-red-900/30 border border-red-800 rounded text-center text-sm">{error}</div>}
+
 
                 <div className="space-y-4">
                     <GoogleLoginButton />
@@ -33,8 +31,8 @@ const Register = () => {
                 <div className="text-center text-sm mt-4">
                     Already have an account? <Link to="/login" className="text-blue-400 hover:underline">Login</Link>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 
 };

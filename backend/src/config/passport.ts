@@ -22,7 +22,11 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+<<<<<<< HEAD
             callbackURL: '/auth/google/callback', // Relative or absolute URL
+=======
+            callbackURL: process.env.GOOGLE_CALLBACK_URL!,
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
             passReqToCallback: true,
         },
         async (req, accessToken, refreshToken, profile, done) => {
@@ -45,7 +49,11 @@ passport.use(
                     // Link Google ID to existing user
                     const user = await prisma.user.update({
                         where: { id: existingEmailUser.id },
+<<<<<<< HEAD
                         data: { googleId: profile.id, avatar: profile.photos?.[0]?.value },
+=======
+                        data: { googleId: profile.id, avatar: profile.photos?.[0]?.value, authProvider: 'google' },
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
                     });
                     return done(null, user);
                 }
@@ -57,6 +65,10 @@ passport.use(
                         email: profile.emails![0].value,
                         name: profile.displayName,
                         avatar: profile.photos?.[0]?.value,
+<<<<<<< HEAD
+=======
+                        authProvider: 'google',
+>>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
                         role: 'user', // Default role
                     },
                 });

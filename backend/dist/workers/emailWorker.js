@@ -90,9 +90,9 @@ exports.emailWorker = new bullmq_1.Worker(emailQueue_1.EMAIL_QUEUE_NAME, process
         duration: 1000,
     },
 });
-exports.emailWorker.on('completed', (job) => {
-    console.log(`Queue Job ${job.id} completed!`);
-});
+// emailWorker.on('completed', (job) => {
+//     console.log(`Queue Job ${job.id} completed!`);
+// });
 exports.emailWorker.on('failed', (job, err) => {
     if (err.message.includes('RateLimit')) {
         console.log(`Queue Job ${job?.id} rate limited (rescheduled).`);
