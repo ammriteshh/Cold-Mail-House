@@ -13,7 +13,7 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
  * Logs out the user by destroying the session.
  */
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-    req.logout((err) => {
+    req.logout((err: any) => {
         if (err) {
             return res.status(500).json({ message: 'Could not log out' });
         }

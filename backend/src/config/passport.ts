@@ -25,7 +25,7 @@ passport.use(
             callbackURL: process.env.GOOGLE_CALLBACK_URL!,
             passReqToCallback: true,
         },
-        async (req, accessToken, refreshToken, profile, done) => {
+        async (req: any, accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
             try {
                 // 1. Check if user exists by Google ID
                 const existingUser = await prisma.user.findUnique({
@@ -37,34 +37,39 @@ passport.use(
                 }
 
                 // 2. Check if user exists by Email (link account)
-                const existingEmailUser = await prisma.user.findUnique({
-                    where: { email: profile.emails![0].value },
-                });
-
-                if (existingEmailUser) {
-                    // Link Google ID to existing user
-                    const user = await prisma.user.update({
-                        where: { id: existingEmailUser.id },
-                        data: { googleId: profile.id, avatar: profile.photos?.[0]?.value, authProvider: 'google' },
+                if (profile.emails && profile.emails.length > 0) {
+                    const existingEmailUser = await prisma.user.findUnique({
+                        where: { email: profile.emails[0].value },
                     });
-                    return done(null, user);
+
+                    if (existingEmailUser) {
+                        // Link Google ID to existing user
+                        const user = await prisma.user.update({
+                            where: { id: existingEmailUser.id },
+                            data: { googleId: profile.id, avatar: profile.photos?.[0]?.value, authProvider: 'google' },
+                        });
+                        return done(null, user);
+                    }
+
+                    // 3. Create new user
+                    const newUser = await prisma.user.create({
+                        data: {
+                            googleId: profile.id,
+                            email: profile.emails[0].value,
+                            name: profile.displayName,
+                            avatar: profile.photos?.[0]?.value,
+                            authProvider: 'google',
+                            role: 'user', // Default role
+                        },
+                    });
+
+                    return done(null, newUser);
                 }
 
-                // 3. Create new user
-                const newUser = await prisma.user.create({
-                    data: {
-                        googleId: profile.id,
-                        email: profile.emails![0].value,
-                        name: profile.displayName,
-                        avatar: profile.photos?.[0]?.value,
-                        authProvider: 'google',
-                        role: 'user', // Default role
-                    },
-                });
+                return done(new Error("No email found in profile"), undefined);
 
-                done(null, newUser);
             } catch (error) {
-                done(error, undefined);
+                return done(error, undefined);
             }
         }
     )
