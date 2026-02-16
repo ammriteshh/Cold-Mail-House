@@ -1,9 +1,4 @@
 
-<<<<<<< HEAD
-import React from 'react';
-=======
-
->>>>>>> 98bf376c254248ade89c2380a2f6378fb6947079
 import { client } from '../api/client';
 
 export const GoogleLoginButton = () => {
