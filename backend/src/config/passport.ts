@@ -6,6 +6,7 @@ import { config } from '../config';
 
 passport.serializeUser((user: any, done) => {
     console.log("✅ [DEBUG] Serializing User:", user.id);
+    console.log("   - Session ID should be set now.");
     done(null, user.id);
 });
 
@@ -13,7 +14,13 @@ passport.deserializeUser(async (id: string, done) => {
     try {
         console.log("✅ [DEBUG] Deserializing User ID:", id);
         const user = await prisma.user.findUnique({ where: { id } });
-        done(null, user);
+        if (user) {
+            console.log("   - User found in DB for session.");
+            done(null, user);
+        } else {
+            console.warn("   ⚠️ User NOT found in DB for session ID:", id);
+            done(null, null);
+        }
     } catch (error) {
         console.error("❌ [DEBUG] Deserialize Error:", error);
         done(error, null);

@@ -6,6 +6,27 @@ import { authenticateUser } from '../middleware/authMiddleware';
 
 const router = Router();
 
+// Debug Session Endpoint (Public)
+router.get('/debug-session', (req, res) => {
+    res.cookie('debug_test', '12345', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 // 1 day
+    });
+    res.json({
+        message: "Debug session endpoint hit",
+        sessionID: req.sessionID,
+        session: req.session,
+        user: req.user,
+        cookieConfig: req.session.cookie,
+        headers: req.headers
+    });
+});
+
+// Get Current User (Protected)
+router.get('/me', authenticateUser, getMe);
+
 // Google OAuth Login
 // Google OAuth Login
 router.get('/google', (req, res, next) => {
