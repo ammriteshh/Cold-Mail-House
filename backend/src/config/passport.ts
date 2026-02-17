@@ -25,7 +25,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            callbackURL: process.env.GOOGLE_CALLBACK_URL!,
+            callbackURL: "https://cold-mail-house.onrender.com/auth/google/callback",
             passReqToCallback: true,
         },
         async (req: any, accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
