@@ -34,7 +34,7 @@ app.set('trust proxy', 1);
 // CORS Configuration
 app.use(
     cors({
-        origin: "https://cold-mail-house-1.onrender.com", // Explicitly set to frontend URL
+        origin: process.env.FRONTEND_URL || "http://localhost:5173", // Dynamic origin
         credentials: true
     })
 );
