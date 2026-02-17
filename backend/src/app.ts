@@ -50,6 +50,7 @@ app.use(
         secret: process.env.SESSION_SECRET || "supersecret",
         resave: false,
         saveUninitialized: false,
+        proxy: true, // Required for Heroku/Render to set secure cookies
         cookie: {
             secure: true, // Always true for cross-site
             httpOnly: true,
