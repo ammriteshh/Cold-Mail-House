@@ -29,7 +29,12 @@ router.get('/me', authenticateUser, getMe);
 
 // Google OAuth Login
 // Google OAuth Login
+// Google OAuth Login
 router.get('/google', (req, res, next) => {
+    // Prevent Cloudflare/Browser caching of the initial redirect
+    res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
     console.log("✅ [DEBUG] /auth/google hit");
     next();
 }, passport.authenticate('google', { scope: ['profile', 'email'] }));

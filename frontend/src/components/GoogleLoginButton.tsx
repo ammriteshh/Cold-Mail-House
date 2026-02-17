@@ -1,9 +1,10 @@
 
-import { client } from '../api/client';
+
 
 export const GoogleLoginButton = () => {
     const handleGoogleLogin = () => {
-        window.location.href = `${client.defaults.baseURL}/auth/google`;
+        // Redirect to backend Google Auth (Hardcoded for Prod)
+        window.location.href = "https://cold-mail-house.onrender.com/auth/google";
     };
 
     return (
