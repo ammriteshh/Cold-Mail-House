@@ -33,6 +33,7 @@
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "googleapis": "^171.4.0",
     "ioredis": "^5.9.2",
     "nodemailer": "^8.0.0",
     "passport": "^0.7.0",
@@ -41,5 +42,8 @@
     "prisma": "7.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }
