@@ -12,6 +12,7 @@ datasource db {
 enum JobStatus {
   PENDING
   SENT
+  COMPLETED // Keeping for legacy data compatibility
   FAILED
 }
 
