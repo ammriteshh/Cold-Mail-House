@@ -1,8 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
-
-// Migrated to usage of prisma.config.ts
-const prisma = new PrismaClient();
+import { prisma } from '../src/db/prisma';
 
 async function main() {
     console.log('🔍 Checking for orphaned jobs...');
