@@ -1,10 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 
-// @ts-ignore - User reports legacy config is failing in Render environment
-const prisma = new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL,
-});
+// Migrated to usage of prisma.config.ts
+const prisma = new PrismaClient();
 
 async function main() {
     console.log('🔍 Checking for orphaned jobs...');
