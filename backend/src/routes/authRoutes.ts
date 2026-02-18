@@ -65,23 +65,21 @@ router.get(
     (req, res) => {
         // Successful authentication
         // Successful authentication
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         console.log("✅ [DEBUG] OAuth Callback Hit");
         console.log("   - User:", req.user);
         console.log("   - Session ID:", req.sessionID);
-        console.log("   - Redirecting to:", `${frontendUrl}/dashboard`);
+
+        const redirectUrl = `${process.env.FRONTEND_URL}/dashboard`;
+        console.log("   - Redirecting to:", redirectUrl);
 
         // Explicitly save session before redirect to ensure cookie is set
         req.session.save((err) => {
             if (err) {
                 console.error("❌ [DEBUG] Session save error:", err);
-                return res.redirect(`${frontendUrl}/login?error=session_save_failed`);
+                return res.redirect(`${process.env.FRONTEND_URL}/login?error=session_save_failed`);
             }
             console.log("✅ [DEBUG] Session saved successfully");
-            const setCookieHeader = res.getHeader('set-cookie');
-            console.log("   - Set-Cookie Header:", setCookieHeader);
-            // Redirect to dashboard
-            res.redirect(`${frontendUrl}/dashboard`);
+            res.redirect(redirectUrl);
         });
     }
 );

@@ -6,6 +6,7 @@ import { asyncHandler } from '../utils/asyncHandler';
  * Returns the currently authenticated user.
  */
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
+    console.log("User from session:", req.user);
     res.json({ user: req.user });
 });
 

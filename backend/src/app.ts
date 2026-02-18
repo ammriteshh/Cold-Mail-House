@@ -32,22 +32,9 @@ app.use(express.json());
 app.set('trust proxy', 1);
 
 // CORS Configuration
-const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    process.env.LOCAL_FRONTEND_URL || "http://localhost:5173",
-    "http://localhost:3000"
-].filter(Boolean) as string[];
-
 app.use(
     cors({
-        origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                console.warn(`Blocked CORS for origin: ${origin}`);
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
+        origin: process.env.FRONTEND_URL,
         credentials: true
     })
 );
@@ -55,21 +42,21 @@ app.use(
 // Session Configuration
 app.use(
     session({
+        name: "coldmail.sid",
         store: new pgStore({
             pool: pool,
             tableName: "session",
             createTableIfMissing: true
         }),
-        secret: process.env.SESSION_SECRET || "supersecret",
+        secret: process.env.SESSION_SECRET!,
         resave: false,
         saveUninitialized: false,
         proxy: true, // Required for Heroku/Render to set secure cookies
         cookie: {
-            secure: process.env.NODE_ENV === 'production',
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || '.onrender.com' : undefined
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         },
     })
 );
