@@ -13,4 +13,12 @@ const connection = config.redis.url
         maxRetriesPerRequest: null, // Required for BullMQ
     });
 
+connection.on('error', (err) => {
+    console.error('❌ Redis Connection Error:', err);
+});
+
+connection.on('connect', () => {
+    console.log('✅ Connected to Redis');
+});
+
 export default connection;

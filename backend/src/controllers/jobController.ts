@@ -59,16 +59,28 @@ export const scheduleEmail = asyncHandler(async (req: Request, res: Response) =>
         const delay = scheduleDate.getTime() - Date.now();
 
         // 3. Add to BullMQ queue
-        await emailQueue.add(
-            "send-email",
-            { jobId: job.id },
-            {
-                delay: Math.max(0, delay),
-                removeOnComplete: true,
-                removeOnFail: false, // Keep failed jobs for inspection
-                jobId: job.id.toString() // Deduplication if needed
-            }
-        );
+        try {
+            await emailQueue.add(
+                "send-email",
+                { jobId: job.id },
+                {
+                    delay: Math.max(0, delay),
+                    removeOnComplete: true,
+                    removeOnFail: false, // Keep failed jobs for inspection
+                    jobId: job.id.toString() // Deduplication if needed
+                }
+            );
+        } catch (queueError) {
+            console.error("❌ [CRITICAL] Failed to add job to queue (Redis down?):", queueError);
+            // Verify if we should throw or just warn. 
+            // If queue is down, job is in DB (PENDING). We can potentially pick it up later.
+            // For now, let's warn user but return success (Job is saved).
+            return res.status(201).json({
+                message: "Email saved but scheduling failed (Queue issue). It will be retried later.",
+                jobId: job.id,
+                warning: "Queue unavailable"
+            });
+        }
 
         res.status(201).json({
             message: "Email scheduled successfully",
