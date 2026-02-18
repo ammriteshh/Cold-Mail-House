@@ -14,12 +14,20 @@ const EmailComposer: React.FC = () => {
         setLoading(true);
         setMsg(null);
         try {
-            await scheduleEmail(data);
+            // Format date to ISO string if present
+            const payload = {
+                ...data,
+                scheduledAt: data.scheduledAt ? new Date(data.scheduledAt).toISOString() : undefined
+            };
+
+            await scheduleEmail(payload);
             setMsg({ type: 'success', text: 'Email scheduled successfully!' });
             reset();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Schedule Error:", err);
-            setMsg({ type: 'error', text: 'Failed to schedule email. Please try again.' });
+            // Show more detailed error if available
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to schedule email. Please try again.';
+            setMsg({ type: 'error', text: errorMsg });
         } finally {
             setLoading(false);
         }
