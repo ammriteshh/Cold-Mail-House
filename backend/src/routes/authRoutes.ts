@@ -64,6 +64,7 @@ router.get(
     },
     (req, res) => {
         // Successful authentication
+        // Successful authentication
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         console.log("✅ [DEBUG] OAuth Callback Hit");
         console.log("   - User:", req.user);

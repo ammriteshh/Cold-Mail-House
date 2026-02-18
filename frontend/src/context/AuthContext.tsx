@@ -29,10 +29,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check auth on mount (session)
     useEffect(() => {
         const checkAuth = async () => {
+            console.log("🔍 [AuthContext] Checking auth state...");
             try {
                 const { data } = await client.get('/auth/me');
+                console.log("✅ [AuthContext] User authenticated:", data.user.email);
                 setUser(data.user);
             } catch (error) {
+                console.warn("⚠️ [AuthContext] Auth check failed (Not logged in)");
                 setUser(null);
             } finally {
                 setIsLoading(false);

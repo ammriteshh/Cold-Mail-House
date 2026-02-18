@@ -32,9 +32,22 @@ app.use(express.json());
 app.set('trust proxy', 1);
 
 // CORS Configuration
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.LOCAL_FRONTEND_URL || "http://localhost:5173",
+    "http://localhost:3000"
+].filter(Boolean) as string[];
+
 app.use(
     cors({
-        origin: ["https://cold-mail-house-1.onrender.com", "http://localhost:5173", "http://localhost:3000"],
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                console.warn(`Blocked CORS for origin: ${origin}`);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true
     })
 );
@@ -52,11 +65,11 @@ app.use(
         saveUninitialized: false,
         proxy: true, // Required for Heroku/Render to set secure cookies
         cookie: {
-            secure: true, // Always true for cross-site
+            secure: process.env.NODE_ENV === 'production',
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            sameSite: "none", // Required for cross-site
-            domain: ".onrender.com" // User requested
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || '.onrender.com' : undefined
         },
     })
 );
