@@ -106,3 +106,24 @@ export const getJobs = asyncHandler(async (req: Request, res: Response) => {
 
     res.json(jobs);
 });
+
+/**
+ * DEBUG: Get all pending jobs that are due
+ */
+export const getPendingJobs = asyncHandler(async (req: Request, res: Response) => {
+    const now = new Date();
+    const dueJobs = await prisma.job.findMany({
+        where: {
+            status: 'PENDING',
+            scheduledAt: { lte: now }
+        },
+        include: { user: { select: { email: true, id: true } } }
+    });
+
+    res.json({
+        count: dueJobs.length,
+        serverTime: now,
+        jobs: dueJobs
+    });
+});
+

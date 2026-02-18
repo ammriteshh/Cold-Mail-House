@@ -12,7 +12,7 @@ export const getAnalytics = asyncHandler(async (req: Request, res: Response) => 
 
     // Execute all count queries in parallel for performance
     const [sent, pending, failed, total] = await Promise.all([
-        prisma.job.count({ where: { senderId: userId, status: "COMPLETED" } }),
+        prisma.job.count({ where: { senderId: userId, status: "SENT" } }),
         prisma.job.count({ where: { senderId: userId, status: "PENDING" } }),
         prisma.job.count({ where: { senderId: userId, status: "FAILED" } }),
         prisma.job.count({ where: { senderId: userId } })

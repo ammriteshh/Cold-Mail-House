@@ -61,7 +61,13 @@ passport.use(
                         // Link Google ID to existing user
                         const user = await prisma.user.update({
                             where: { id: existingEmailUser.id },
-                            data: { googleId: profile.id, avatar: profile.photos?.[0]?.value, authProvider: 'google' },
+                            data: {
+                                googleId: profile.id,
+                                avatar: profile.photos?.[0]?.value,
+                                authProvider: 'google',
+                                accessToken: accessToken,
+                                ...(refreshToken ? { refreshToken } : {})
+                            },
                         });
                         return done(null, user);
                     }
@@ -76,6 +82,8 @@ passport.use(
                             avatar: profile.photos?.[0]?.value,
                             authProvider: 'google',
                             role: 'user', // Default role
+                            accessToken: accessToken,
+                            refreshToken: refreshToken,
                         },
                     });
 

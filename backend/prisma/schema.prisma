@@ -11,7 +11,7 @@ datasource db {
 
 enum JobStatus {
   PENDING
-  COMPLETED
+  SENT
   FAILED
 }
 
@@ -54,6 +54,7 @@ model User {
   googleId      String?  @unique // New field for Google OAuth
   authProvider  String?  // "google" or others
   role          String   @default("user") // "user" | "admin"
+  accessToken   String?  // Google OAuth Access Token
   refreshToken  String?  // Stored securely, still useful if we keep some hybrid auth later or just for session meta
   avatar        String?
   createdAt     DateTime @default(now())
