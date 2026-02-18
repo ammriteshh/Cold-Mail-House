@@ -1,10 +1,14 @@
 
 
 
+import { useAuth } from '../context/AuthContext';
+
 export const GoogleLoginButton = () => {
+    const { login } = useAuth();
+
     const handleGoogleLogin = () => {
-        // Redirect to backend Google Auth (Hardcoded for Prod)
-        window.location.href = "https://cold-mail-house.onrender.com/auth/google";
+        // Use the centralized login method from AuthContext which handles dynamic URLs
+        login();
     };
 
     return (

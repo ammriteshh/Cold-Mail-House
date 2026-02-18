@@ -3,15 +3,15 @@ import axios from 'axios';
 
 // Detect the current environment using window.location
 const detectApiBase = () => {
-    if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL;
+    if (import.meta.env.VITE_BACKEND_URL) {
+        return import.meta.env.VITE_BACKEND_URL;
     }
     // If we are in development (localhost)
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000';
     }
-    // Fallback for production if env var is missing (not recommended but safe default)
-    return 'https://cold-mail-house.onrender.com/api';
+    // Fallback for production if env var is missing
+    return 'https://cold-mail-house.onrender.com';
 };
 
 export const client = axios.create({
