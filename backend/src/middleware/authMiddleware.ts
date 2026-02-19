@@ -8,10 +8,13 @@ import { AppError } from '../utils/AppError';
 /**
  * Middleware to protect routes that require authentication using Sessions.
  */
+/**
+ * Middleware to protect routes.
+ * For Single User Mode, we assume all API requests from the frontend are authorized
+ * or we can add a simple API_KEY check later.
+ */
 export const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    return next(new AppError('Unauthorized: Please log in', 401));
+    // Open access for now as requested for simplicity
+    return next();
 };
 

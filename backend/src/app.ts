@@ -2,24 +2,11 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import session from "express-session";
-import passport from "passport";
-import pgSession from "connect-pg-simple";
-import { Pool } from "pg";
 import jobRoutes from "./routes/jobRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
-import authRoutes from "./routes/authRoutes";
-import { authenticateUser } from "./middleware/authMiddleware";
 import { globalErrorHandler } from "./middleware/errorHandler";
-import "./config/passport"; // Initialize passport config
 
 const app = express();
-const pgStore = pgSession(session);
-
-// Database pool for session store
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-});
 
 /**
  * =======================
@@ -28,7 +15,7 @@ const pool = new Pool({
  */
 app.use(express.json());
 
-// Trust Proxy for Render/Heroku (Required for secure cookies behind split load balancers)
+// Trust Proxy for Render/Heroku
 app.set('trust proxy', 1);
 
 // CORS Configuration
@@ -38,31 +25,6 @@ app.use(
         credentials: true
     })
 );
-
-// Session Configuration
-app.use(
-    session({
-        name: "coldmail.sid",
-        store: new pgStore({
-            pool: pool,
-            tableName: "session",
-            createTableIfMissing: true
-        }),
-        secret: process.env.SESSION_SECRET!,
-        resave: false,
-        saveUninitialized: false,
-        proxy: true, // Required for Heroku/Render to set secure cookies
-        cookie: {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
-        },
-    })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 /**
  * =======================
@@ -75,18 +37,15 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-app.use("/auth", authRoutes);
-
-
-// Protected Routes
-app.use("/", authenticateUser, jobRoutes);
-app.use("/api", authenticateUser, analyticsRoutes);
+// Protected Routes (Simplified: Single User Mode)
+// For now, we will leave these open or add a simple header check later.
+// The frontend will just hit these directly.
+app.use("/api/jobs", jobRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 /**
  * =======================
  * ⚠️ ERROR HANDLING
  * =======================
  */
-app.use(globalErrorHandler);
-
-export { app };
+// End of file

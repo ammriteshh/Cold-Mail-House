@@ -7,12 +7,13 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum JobStatus {
   PENDING
   SENT
-  COMPLETED // Keeping for legacy data compatibility
+  COMPLETED 
   FAILED
 }
 
@@ -24,9 +25,9 @@ model Job {
   subject         String
   body            String
   
-  // Metadata for Sender/Rate Limits
-  senderId        String    
-  user            User      @relation(fields: [senderId], references: [id])
+  // Removed User relation as this is now a single-user system
+  // senderId        String    
+  // user            User      @relation(fields: [senderId], references: [id])
   
   // Job Control
   status          JobStatus @default(PENDING)
@@ -43,22 +44,7 @@ model Job {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  @@index([status, scheduledAt]) // Optimization for polling if we weren't using BullMQ, but good for reporting
-  @@index([senderId, scheduledAt]) // Useful for per-sender history
+  @@index([status, scheduledAt])
 }
 
-model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  password      String?  // Made optional for OAuth users
-  name          String?  // Made optional
-  googleId      String?  @unique // New field for Google OAuth
-  authProvider  String?  // "google" or others
-  role          String   @default("user") // "user" | "admin"
-  accessToken   String?  // Google OAuth Access Token
-  refreshToken  String?  // Stored securely, still useful if we keep some hybrid auth later or just for session meta
-  avatar        String?
-  createdAt     DateTime @default(now())
-  
-  jobs          Job[]
-}
+// User model removed for simplification
