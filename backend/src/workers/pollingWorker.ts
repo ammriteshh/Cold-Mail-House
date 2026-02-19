@@ -1,9 +1,6 @@
 import { prisma } from '../db/prisma';
-import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
+import { sendEmail } from '../services/emailService';
 import { Job } from '@prisma/client';
-
-const OAuth2 = google.auth.OAuth2;
 
 /**
  * CONFIGURATION
@@ -12,62 +9,15 @@ const POLLING_INTERVAL_MS = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 
 /**
- * Creates a Nodemailer transporter using OAuth2
- */
-const createTransporter = async (user: any) => {
-    const oauth2Client = new OAuth2(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_CALLBACK_URL
-    );
-
-    oauth2Client.setCredentials({
-        refresh_token: user.refreshToken
-    });
-
-    try {
-        // Automatically refreshes the access token if needed
-        const accessTokenResponse = await oauth2Client.getAccessToken();
-        const accessToken = accessTokenResponse?.token;
-
-        if (!accessToken) throw new Error("Failed to generate Access Token");
-
-        return nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                type: 'OAuth2',
-                user: user.email,
-                clientId: process.env.GOOGLE_CLIENT_ID,
-                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                refreshToken: user.refreshToken,
-                accessToken: accessToken,
-            },
-        });
-    } catch (error) {
-        console.error(`❌ [Worker] Failed to create transporter for ${user.email}:`, error);
-        throw error;
-    }
-};
-
-/**
  * Processes a single job
  */
 const processJob = async (job: Job & { user: any }) => {
     console.log(`📩 [Worker] Processing Job ID: ${job.id} for ${job.user.email}`);
 
     try {
-        if (!job.user.refreshToken) {
-            throw new Error("User has no Refresh Token. Re-login required.");
-        }
-
-        const transporter = await createTransporter(job.user);
-
-        const info = await transporter.sendMail({
-            from: `"${job.user.name || 'Cold Mail House'}" <${job.user.email}>`,
-            to: job.recipient,
-            subject: job.subject,
-            html: job.body, // Assuming body is HTML
-        });
+        // Use the unified emailService (SMTP) instead of per-user OAuth2
+        // Note: With Gmail SMTP, 'from' will always be the authenticated user.
+        const info = await sendEmail(job.recipient, job.subject, job.body);
 
         console.log(`✅ [Worker] Email Sent! Job ID: ${job.id}, Message ID: ${info.messageId}`);
 
