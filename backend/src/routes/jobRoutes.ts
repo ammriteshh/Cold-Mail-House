@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { scheduleEmail, getJobs, getPendingJobs } from '../controllers/jobController';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/schedule-email', scheduleEmail);
 router.get('/jobs', getJobs);
