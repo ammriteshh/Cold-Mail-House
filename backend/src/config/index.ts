@@ -13,10 +13,11 @@ export const config = {
         port: parseInt(process.env.REDIS_PORT || '6379', 10),
     },
     email: {
-        host: 'smtp.ethereal.email',
-        port: 587,
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        user: process.env.SMTP_USER || process.env.EMAIL_USER,
+        pass: process.env.SMTP_PASS || process.env.EMAIL_PASS,
+        from: process.env.SMTP_FROM || '"Cold Mail House" <system@coldmail.com>',
     },
     rateLimit: {
         maxPerSenderPerHour: 100,
@@ -36,7 +37,7 @@ const requiredEnvVars = [
 
 const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
 
-if (missingVars.length > 0) {
+if (missingVars.length > 0 && process.env.SKIP_ENV_CHECK !== 'true') {
     console.error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
     process.exit(1);
 }

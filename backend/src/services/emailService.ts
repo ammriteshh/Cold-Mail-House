@@ -32,7 +32,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
     try {
         const info = await transport.sendMail({
-            from: '"Cold Mail House" <system@coldmail.com>',
+            from: config.email.from,
             to,
             subject,
             html,
@@ -41,5 +41,21 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
     } catch (error) {
         console.error('Error sending email:', error);
         throw new Error('Failed to send email');
+    }
+};
+
+/**
+ * Verifies the SMTP connection configuration.
+ * @returns {Promise<boolean>} True if connection is verified, false otherwise.
+ */
+export const verifyConnection = async (): Promise<boolean> => {
+    const transport = getTransporter();
+    try {
+        await transport.verify();
+        console.log('✅ SMTP Connection Verified');
+        return true;
+    } catch (error) {
+        console.error('❌ SMTP Connection Failed:', error);
+        return false;
     }
 };
