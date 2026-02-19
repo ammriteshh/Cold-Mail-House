@@ -11,12 +11,14 @@ const MAX_RETRIES = 3;
 /**
  * Processes a single job
  */
-const processJob = async (job: Job & { user: any }) => {
-    console.log(`📩 [Worker] Processing Job ID: ${job.id} for ${job.user.email}`);
+/**
+ * Processes a single job
+ */
+const processJob = async (job: Job) => {
+    console.log(`📩 [Worker] Processing Job ID: ${job.id} for ${job.recipient}`);
 
     try {
-        // Use the unified emailService (SMTP) instead of per-user OAuth2
-        // Note: With Gmail SMTP, 'from' will always be the authenticated user.
+        // Use the unified emailService (SMTP)
         const info = await sendEmail(job.recipient, job.subject, job.body);
 
         console.log(`✅ [Worker] Email Sent! Job ID: ${job.id}, Message ID: ${info.messageId}`);
@@ -60,7 +62,6 @@ const runWorker = async () => {
                     status: 'PENDING',
                     scheduledAt: { lte: now }
                 },
-                include: { user: true },
                 take: 10 // Batch size
             });
 

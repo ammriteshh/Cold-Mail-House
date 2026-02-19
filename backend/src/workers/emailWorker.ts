@@ -21,25 +21,6 @@ const getNextHourDelay = (): number => {
 /**
  * Checks if the sender has exceeded their hourly rate limit.
  */
-const checkSenderRateLimit = async (senderId: string, jobId: number, job: Job) => {
-    const currentHour = new Date().toISOString().slice(0, 13); // Format: "YYYY-MM-DDTHH"
-    const rateLimitKey = `rate-limit:sender:${senderId}:${currentHour}`;
-
-    const currentCount = await connection.incr(rateLimitKey);
-
-    // Set expiry on first increment
-    if (currentCount === 1) {
-        await connection.expire(rateLimitKey, RATE_LIMIT_WINDOW);
-    }
-
-    if (currentCount > config.rateLimit.maxPerSenderPerHour) {
-        console.warn(`Rate limit exceeded for sender ${senderId}. Rescheduling Job ${jobId}.`);
-        const delay = getNextHourDelay();
-        await job.moveToDelayed(Date.now() + delay, job.token);
-        throw new Error(`RateLimit: Moved to delayed (Queue Order)`);
-    }
-};
-
 /**
  * Updates the job status in the database.
  */
@@ -61,9 +42,13 @@ const updateJobStatus = async (jobId: number, status: 'COMPLETED' | 'FAILED', fa
  * Main processor for email jobs.
  */
 const processEmailJob = async (job: Job) => {
-    const { jobId } = job.data;
+    const { jobId } = job.data; // Now using numeric ID directly if passed, or matching job creation
 
-    const emailJob = await prisma.job.findUnique({ where: { id: jobId } });
+    // Job ID from BullMQ might be different from DB ID if we didn't force it, but our controller forces it.
+    // However, the controller passes { jobId: job.id } in data.
+    const dbJobId = typeof jobId === 'string' && jobId.startsWith('job-') ? parseInt(jobId.split('-')[1]) : jobId;
+
+    const emailJob = await prisma.job.findUnique({ where: { id: parseInt(String(dbJobId)) } });
 
     if (!emailJob) {
         console.error(`Job ${jobId} not found in DB`);
@@ -75,15 +60,15 @@ const processEmailJob = async (job: Job) => {
         return;
     }
 
-    await checkSenderRateLimit(emailJob.senderId, jobId, job);
+    // Single User Mode: No sender rate limit check needed here (or global limit can be applied if needed)
 
     try {
         const info = await sendEmail(emailJob.recipient, emailJob.subject, emailJob.body);
         console.log(`Email sent for Job ${jobId}: ${info.messageId}`);
-        await updateJobStatus(jobId, 'COMPLETED');
+        await updateJobStatus(emailJob.id, 'COMPLETED');
     } catch (error: any) {
         console.error(`Failed to send email for Job ${jobId}:`, error);
-        await updateJobStatus(jobId, 'FAILED', error.message || 'Unknown error');
+        await updateJobStatus(emailJob.id, 'FAILED', error.message || 'Unknown error');
         throw error; // Rethrow to let BullMQ handle retry/failure logic
     }
 };
