@@ -1,21 +1,22 @@
-export type JobStatus = 'PENDING' | 'SENT' | 'FAILED';
+export type JobStatus = 'PENDING' | 'COMPLETED' | 'FAILED';
 
 export interface Job {
     id: number;
     recipient: string;
     subject: string;
     body: string;
-    senderId: string;
     status: JobStatus;
     scheduledAt: string;
     sentAt?: string | null;
+    failureReason?: string | null;
     createdAt: string;
+    updatedAt: string;
 }
 
 export interface CreateJobDto {
     recipient: string;
     subject: string;
     body: string;
-    senderId: string;
     scheduledAt?: string;
+    idempotencyKey?: string;
 }

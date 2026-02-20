@@ -5,25 +5,25 @@ import { asyncHandler } from '../utils/asyncHandler';
 
 /**
  * Retrieves email job analytics (Global for Single User Mode).
- * Returns counts of sent, pending, and failed emails, plus success rate.
+ * Returns counts of completed, pending, and failed emails, plus success rate.
  */
 export const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
 
     // Execute all count queries in parallel for performance
-    const [sent, pending, failed, total] = await Promise.all([
-        prisma.job.count({ where: { status: "SENT" } }),
+    const [completed, pending, failed, total] = await Promise.all([
+        prisma.job.count({ where: { status: "COMPLETED" } }),
         prisma.job.count({ where: { status: "PENDING" } }),
         prisma.job.count({ where: { status: "FAILED" } }),
         prisma.job.count()
     ]);
 
-    const successRate = sent + failed > 0
-        ? Math.round((sent / (sent + failed)) * 100)
+    const successRate = completed + failed > 0
+        ? Math.round((completed / (completed + failed)) * 100)
         : 0;
 
     res.json({
         totalEmails: total,
-        totalSent: sent,
+        totalSent: completed,
         totalPending: pending,
         totalFailed: failed,
         successRate

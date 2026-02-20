@@ -27,7 +27,7 @@ const processJob = async (job: Job) => {
         await prisma.job.update({
             where: { id: job.id },
             data: {
-                status: 'SENT',
+                status: 'COMPLETED',
                 sentAt: new Date(),
             }
         });

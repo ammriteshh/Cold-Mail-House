@@ -109,8 +109,7 @@ export const getPendingJobs = asyncHandler(async (req: Request, res: Response) =
         where: {
             status: 'PENDING',
             scheduledAt: { lte: now }
-        },
-        include: { user: { select: { email: true, id: true } } }
+        }
     });
 
     res.json({
