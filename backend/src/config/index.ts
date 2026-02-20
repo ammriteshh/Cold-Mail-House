@@ -24,14 +24,8 @@ export const config = {
     },
 };
 
-// Validate required environment variables
 const requiredEnvVars = [
     'DATABASE_URL',
-    // 'REDIS_URL', // Optional depending on setup, but often required for queues
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
-    'GOOGLE_CALLBACK_URL',
-    'SESSION_SECRET',
     'FRONTEND_URL'
 ];
 

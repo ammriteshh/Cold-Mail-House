@@ -4,6 +4,7 @@ import cors from "cors";
 import "dotenv/config";
 import jobRoutes from "./routes/jobRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
+import authRoutes from "./routes/authRoutes";
 import { globalErrorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -32,14 +33,15 @@ app.use(
  * =======================
  */
 
-// Public Routes
+// Health check
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-// Protected Routes (Simplified: Single User Mode)
-// For now, we will leave these open or add a simple header check later.
-// The frontend will just hit these directly.
+// Auth Routes (Single User Mode — no real session needed)
+app.use("/auth", authRoutes);
+
+// Job & Analytics Routes
 app.use("/api/jobs", jobRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
@@ -48,4 +50,6 @@ app.use("/api/analytics", analyticsRoutes);
  * ⚠️ ERROR HANDLING
  * =======================
  */
-// End of file
+app.use(globalErrorHandler);
+
+export { app };

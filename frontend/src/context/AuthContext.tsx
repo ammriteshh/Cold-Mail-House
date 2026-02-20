@@ -7,16 +7,14 @@ interface User {
     name: string;
     email: string;
     role: string;
-    googleId?: string;
-    avatar?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email?: string, password?: string) => Promise<void>;
-    register: (name?: string, email?: string, password?: string) => Promise<void>;
+    login: () => void;
+    register: () => void;
     logout: () => Promise<void>;
 }
 
@@ -26,44 +24,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Check auth on mount (session)
+    // Check auth on mount — single-user mode always returns the admin
     useEffect(() => {
         const checkAuth = async () => {
-            console.log("🔍 [AuthContext] Checking auth state...");
             try {
                 const { data } = await client.get('/auth/me');
-                console.log("✅ [AuthContext] User authenticated:", data.user.email);
                 setUser(data.user);
             } catch (error) {
-                console.warn("⚠️ [AuthContext] Auth check failed (Not logged in)");
                 setUser(null);
             } finally {
                 setIsLoading(false);
             }
         };
-
         checkAuth();
     }, []);
 
-    const login = async () => {
-        // Redirect to backend Google Auth
-        window.location.href = `${client.defaults.baseURL}/auth/google`;
+    // Single-user mode: no login needed, just set the user directly
+    const login = () => {
+        client.get('/auth/me').then(({ data }) => {
+            setUser(data.user);
+        });
     };
 
-    // Register is deprecated in favor of Google OAuth, but reusing the login flow
-    const register = async () => {
-        // Same as login for OAuth
-        await login();
+    const register = () => {
+        login();
     };
 
     const logout = async () => {
         try {
             await client.post('/auth/logout');
+        } finally {
             setUser(null);
-            // Optional: redirect to login page or home
             window.location.href = '/login';
-        } catch (error) {
-            console.error("Logout failed", error);
         }
     };
 
@@ -81,4 +73,3 @@ export const useAuth = () => {
     }
     return context;
 };
-

@@ -1,91 +1,18 @@
 
 import { Router } from 'express';
-import passport from 'passport';
 import { logout, getMe } from '../controllers/authController';
-import { authenticateUser } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Debug Session Endpoint (Public)
-router.get('/debug-session', (req, res) => {
-    res.cookie('debug_test', '12345', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: 1000 * 60 * 60 * 24 // 1 day
-    });
-    res.json({
-        message: "Debug session endpoint hit",
-        sessionID: req.sessionID,
-        session: req.session,
-        user: req.user,
-        cookieConfig: req.session.cookie,
-        headers: req.headers
-    });
-});
+/**
+ * Single-user mode auth routes.
+ * No OAuth or session needed — the app is owner-only.
+ */
 
-// Get Current User (Protected)
-router.get('/me', authenticateUser, getMe);
+// Get current "user" (always returns the static admin)
+router.get('/me', getMe);
 
-// Google OAuth Login
-// Google OAuth Login
-// Google OAuth Login
-router.get('/google', (req, res, next) => {
-    // Prevent Cloudflare/Browser caching of the initial redirect
-    res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.header('Pragma', 'no-cache');
-    res.header('Expires', '0');
-    console.log("✅ [DEBUG] /auth/google hit");
-    next();
-}, passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-// Google OAuth Callback
-router.get(
-    '/google/callback',
-    (req, res, next) => {
-        passport.authenticate('google', (err: any, user: any, info: any) => {
-            if (err) {
-                console.error("❌ [DEBUG] Passport Error:", err);
-                return res.status(500).json({ error: "Authentication failed", details: err.message });
-            }
-            if (!user) {
-                console.error("❌ [DEBUG] No user returned:", info);
-                return res.status(401).json({ error: "Authentication failed", details: "No user returned" });
-            }
-
-            req.logIn(user, (err) => {
-                if (err) {
-                    console.error("❌ [DEBUG] Login Error:", err);
-                    return res.status(500).json({ error: "Login failed", details: err.message });
-                }
-                next(); // Continue to success handler
-            });
-        })(req, res, next);
-    },
-    (req, res) => {
-        // Successful authentication
-        // Successful authentication
-        console.log("✅ [DEBUG] OAuth Callback Hit");
-        console.log("   - User:", req.user);
-        console.log("   - Session ID:", req.sessionID);
-
-        const redirectUrl = `${process.env.FRONTEND_URL}/dashboard`;
-        console.log("   - Redirecting to:", redirectUrl);
-
-        // Explicitly save session before redirect to ensure cookie is set
-        req.session.save((err) => {
-            if (err) {
-                console.error("❌ [DEBUG] Session save error:", err);
-                return res.redirect(`${process.env.FRONTEND_URL}/login?error=session_save_failed`);
-            }
-            console.log("✅ [DEBUG] Session saved successfully");
-            res.redirect(redirectUrl);
-        });
-    }
-);
-
+// Logout stub
 router.post('/logout', logout);
 
 export default router;
-
-
