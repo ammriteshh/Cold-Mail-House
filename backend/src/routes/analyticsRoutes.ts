@@ -3,6 +3,6 @@ import { getAnalytics } from '../controllers/analyticsController';
 
 const router = Router();
 
-router.get('/analytics', getAnalytics);
+router.get('/', getAnalytics);
 
 export default router;

@@ -9,17 +9,18 @@ export interface JobStats {
 }
 
 export const scheduleEmail = async (data: CreateJobDto) => {
-    return client.post<{ message: string; jobId: number }>('/schedule-email', data);
+    return client.post<{ message: string; jobId: number }>('/api/jobs/schedule-email', data);
 };
 
 export const getJobs = async () => {
-    return client.get<Job[]>('/jobs');
+    const res = await client.get<{ status: string; results: number; data: Job[] }>('/api/jobs/jobs');
+    // Unwrap backend envelope so callers get res.data as Job[]
+    return { data: res.data.data };
 };
 
 export const getJobStats = async () => {
     const res = await client.get<{ totalSent: number, totalPending: number, totalFailed: number, successRate: number }>('/api/analytics');
 
-    // Map new API response to match UI expectations
     return {
         data: {
             sent: res.data.totalSent,
