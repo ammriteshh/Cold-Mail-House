@@ -6,10 +6,11 @@ let transporter: nodemailer.Transporter | null = null;
 
 const getTransporter = () => {
     if (!transporter) {
+        const port = config.email.port;
         transporter = nodemailer.createTransport({
             host: config.email.host,
-            port: config.email.port,
-            secure: false, // true for 465, false for other ports
+            port,
+            secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
             auth: {
                 user: config.email.user,
                 pass: config.email.pass,
@@ -38,9 +39,12 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
             html,
         });
         return info;
-    } catch (error) {
-        console.error('Error sending email:', error);
-        throw new Error('Failed to send email');
+    } catch (error: any) {
+        // Reset cached transporter so a config fix takes effect on next attempt
+        transporter = null;
+        console.error('❌ [emailService] SMTP send failed:', error);
+        // Re-throw the real error so callers (worker, logs, DB) get accurate details
+        throw error;
     }
 };
 
