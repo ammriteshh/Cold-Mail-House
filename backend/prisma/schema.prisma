@@ -12,7 +12,7 @@ datasource db {
 enum JobStatus {
   PENDING
   SENT
-  COMPLETED 
+  COMPLETED
   FAILED
 }
 
