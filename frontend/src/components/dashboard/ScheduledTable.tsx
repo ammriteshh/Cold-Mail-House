@@ -57,8 +57,13 @@ const ScheduledTable: React.FC = () => {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-slate-600 dark:text-slate-300 max-w-xs truncate">{job.subject}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6 py-4">
                                     <StatusBadge status={job.status} />
+                                    {job.status === 'FAILED' && job.failureReason && (
+                                        <div className="mt-1 text-xs text-red-400 max-w-xs break-words" title={job.failureReason}>
+                                            {job.failureReason.length > 80 ? job.failureReason.slice(0, 80) + '…' : job.failureReason}
+                                        </div>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                     {new Date(job.scheduledAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
