@@ -2,6 +2,7 @@ import { app } from "./app";
 import { config } from "./config";
 import { emailQueue } from "./queues/emailQueue";
 import { emailWorker } from "./workers/emailWorker"; // starts worker
+import { verifyConnection } from "./services/emailService";
 
 /**
  * =======================
@@ -10,12 +11,20 @@ import { emailWorker } from "./workers/emailWorker"; // starts worker
  */
 const PORT = config.port;
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
     console.log(`\n===================================`);
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌍 Environment: ${config.env}`);
     console.log(`📨 Email Worker: ACTIVE`);
     console.log(`===================================\n`);
+
+    // Verify SMTP connection on startup
+    const smtpOk = await verifyConnection();
+    if (!smtpOk) {
+        console.warn(`\n⚠️  SMTP WARNING: Cannot connect to ${config.email.host}:${config.email.port}`);
+        console.warn(`   Check SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in your .env file.`);
+        console.warn(`   Emails will FAIL until this is resolved.\n`);
+    }
 });
 
 /**
