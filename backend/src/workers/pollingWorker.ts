@@ -48,8 +48,8 @@ const processJob = async (job: Job) => {
 /**
  * Main Worker Loop
  */
-const runWorker = async () => {
-    console.log("👷 [Worker] Starting Polling Worker...");
+export const startPollingWorker = () => {
+    console.log("👷 [PollingWorker] Starting Polling Worker...");
     console.log(`   - Interval: ${POLLING_INTERVAL_MS}ms`);
 
     setInterval(async () => {
@@ -70,18 +70,18 @@ const runWorker = async () => {
                 return;
             }
 
-            console.log(`🚀 [Worker] Found ${dueJobs.length} due jobs.`);
+            console.log(`🚀 [PollingWorker] Found ${dueJobs.length} due jobs.`);
 
             // 2. Process Jobs in Parallel (or limit concurrency)
             await Promise.all(dueJobs.map(job => processJob(job)));
 
         } catch (error) {
-            console.error("🔥 [Worker] Critical Loop Error:", error);
+            console.error("🔥 [PollingWorker] Critical Loop Error:", error);
         }
     }, POLLING_INTERVAL_MS);
 };
 
 // Start the worker if this file is run directly
 if (require.main === module) {
-    runWorker();
+    startPollingWorker();
 }

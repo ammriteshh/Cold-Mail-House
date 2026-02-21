@@ -1,7 +1,8 @@
 import { app } from "./app";
 import { config } from "./config";
 import { emailQueue } from "./queues/emailQueue";
-import { emailWorker } from "./workers/emailWorker"; // starts worker
+import { emailWorker } from "./workers/emailWorker"; // starts BullMQ worker
+import { startPollingWorker } from "./workers/pollingWorker"; // starts polling fallback
 import { verifyConnection } from "./services/emailService";
 
 /**
@@ -17,6 +18,9 @@ const server = app.listen(PORT, async () => {
     console.log(`🌍 Environment: ${config.env}`);
     console.log(`📨 Email Worker: ACTIVE`);
     console.log(`===================================\n`);
+
+    // Start polling worker (checks DB every 30s for due PENDING jobs)
+    startPollingWorker();
 
     // Verify SMTP connection on startup
     const smtpOk = await verifyConnection();
