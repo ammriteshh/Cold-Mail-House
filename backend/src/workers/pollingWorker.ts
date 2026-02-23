@@ -21,7 +21,7 @@ const processJob = async (job: Job) => {
         // Use the unified emailService (SMTP)
         const info = await sendEmail(job.recipient, job.subject, job.body);
 
-        console.log(`✅ [Worker] Email Sent! Job ID: ${job.id}, Message ID: ${info.messageId}`);
+        console.log(`✅ [Worker] Email Sent! Job ID: ${job.id}, Resend ID: ${info.id}`);
 
         // Update Job Status
         await prisma.job.update({
