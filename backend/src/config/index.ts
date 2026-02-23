@@ -4,29 +4,33 @@ dotenv.config();
 export const config = {
     env: process.env.NODE_ENV || 'development',
     port: parseInt(process.env.PORT || '3000', 10),
+
     db: {
         url: process.env.DATABASE_URL,
     },
+
     redis: {
         url: process.env.REDIS_URL,
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379', 10),
     },
-    email: {
-        host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-        port: parseInt(process.env.SMTP_PORT || '587', 10),
-        user: process.env.SMTP_USER || process.env.EMAIL_USER,
-        pass: process.env.SMTP_PASS || process.env.EMAIL_PASS,
-        from: process.env.SMTP_FROM || '"Cold Mail House" <system@coldmail.com>',
+
+    // ─── Resend (replaces Nodemailer / SMTP) ───────────────────────────────
+    resend: {
+        apiKey: process.env.RESEND_API_KEY || '',
+        from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
     },
+
     rateLimit: {
         maxPerSenderPerHour: 100,
     },
 };
 
+// ─── Required env-var validation ──────────────────────────────────────────────
 const requiredEnvVars = [
     'DATABASE_URL',
-    'FRONTEND_URL'
+    'FRONTEND_URL',
+    'RESEND_API_KEY',
 ];
 
 const missingVars = requiredEnvVars.filter((key) => !process.env[key]);

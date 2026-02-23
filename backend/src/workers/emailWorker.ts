@@ -64,7 +64,7 @@ const processEmailJob = async (job: Job) => {
 
     try {
         const info = await sendEmail(emailJob.recipient, emailJob.subject, emailJob.body);
-        console.log(`Email sent for Job ${jobId}: ${info.messageId}`);
+        console.log(`✅ Email sent for Job ${jobId}. Resend ID: ${info.id}`);
         await updateJobStatus(emailJob.id, 'COMPLETED');
     } catch (error: any) {
         console.error(`Failed to send email for Job ${jobId}:`, error);
