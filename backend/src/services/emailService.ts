@@ -1,8 +1,15 @@
 import { Resend } from 'resend';
 
-// ─── Env validation ──────────────────────────────────────────────────────────
+// ─── Env vars ─────────────────────────────────────────────────────────────────
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+const EMAIL_SENDER_NAME = process.env.EMAIL_SENDER_NAME || '';
+const REPLY_TO_EMAIL = process.env.REPLY_TO_EMAIL || 'amritesh6767@gmail.com';
+
+// Build "Amritesh Singh <onboarding@resend.dev>" — falls back to bare email if name not set
+const FORMATTED_FROM = EMAIL_SENDER_NAME
+    ? `${EMAIL_SENDER_NAME} <${EMAIL_FROM}>`
+    : EMAIL_FROM;
 
 if (!RESEND_API_KEY) {
     console.error('❌ [emailService] RESEND_API_KEY is missing. Emails will not be sent.');
@@ -34,10 +41,11 @@ export const sendEmail = async (
         throw new Error('RESEND_API_KEY is not configured. Cannot send email.');
     }
 
-    console.log(`📧 [emailService] Sending email to: ${to} | Subject: "${subject}"`);
+    console.log(`📧 [emailService] Sending email to: ${to} | Subject: "${subject}" | From: "${FORMATTED_FROM}"`);
 
     const { data, error } = await resend.emails.send({
-        from: EMAIL_FROM,
+        from: FORMATTED_FROM,  // "Amritesh Singh <onboarding@resend.dev>"
+        replyTo: REPLY_TO_EMAIL,  // recipients hit Reply → amritesh6767@gmail.com
         to,
         subject,
         html,
@@ -63,18 +71,24 @@ export const sendEmail = async (
  * Checks Resend configuration without sending a real email.
  * Returns a status object indicating whether the service is ready.
  */
-export const checkResendConfig = (): { ok: boolean; apiKeyPresent: boolean; from: string } => {
+export const checkResendConfig = (): {
+    ok: boolean;
+    apiKeyPresent: boolean;
+    from: string;
+    replyTo: string;
+} => {
     const apiKeyPresent = Boolean(RESEND_API_KEY);
 
     if (!apiKeyPresent) {
         console.error('❌ [emailService] RESEND_API_KEY is not set.');
     } else {
-        console.log('✅ [emailService] Resend config looks good.');
+        console.log(`✅ [emailService] Resend config OK — from: "${FORMATTED_FROM}", replyTo: ${REPLY_TO_EMAIL}`);
     }
 
     return {
         ok: apiKeyPresent,
         apiKeyPresent,
-        from: EMAIL_FROM,
+        from: FORMATTED_FROM,
+        replyTo: REPLY_TO_EMAIL,
     };
 };
