@@ -1,65 +1,80 @@
-import nodemailer from 'nodemailer';
-import { config } from '../config';
+import { Resend } from 'resend';
 
-// Singleton transporter instance
-let transporter: nodemailer.Transporter | null = null;
+// ─── Env validation ──────────────────────────────────────────────────────────
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const EMAIL_FROM = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
-const getTransporter = () => {
-    if (!transporter) {
-        const port = config.email.port;
-        transporter = nodemailer.createTransport({
-            host: config.email.host,
-            port,
-            secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
-            auth: {
-                user: config.email.user,
-                pass: config.email.pass,
-            },
-        });
+if (!RESEND_API_KEY) {
+    console.error('❌ [emailService] RESEND_API_KEY is missing. Emails will not be sent.');
+}
+
+// ─── Singleton Resend client ──────────────────────────────────────────────────
+const resend = new Resend(RESEND_API_KEY || 'missing_key');
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+export interface ResendSendResult {
+    id: string;
+}
+
+/**
+ * Sends an email using the Resend API.
+ *
+ * @param to      - Recipient email address
+ * @param subject - Email subject line
+ * @param html    - HTML body content
+ * @returns       - Resend response object containing the message `id`
+ * @throws        - Re-throws Resend API errors with full details logged
+ */
+export const sendEmail = async (
+    to: string,
+    subject: string,
+    html: string,
+): Promise<ResendSendResult> => {
+    if (!RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY is not configured. Cannot send email.');
     }
-    return transporter;
+
+    console.log(`📧 [emailService] Sending email to: ${to} | Subject: "${subject}"`);
+
+    const { data, error } = await resend.emails.send({
+        from: EMAIL_FROM,
+        to,
+        subject,
+        html,
+    });
+
+    if (error) {
+        console.error('❌ [emailService] Resend API error:', {
+            name: error.name,
+            message: error.message,
+        });
+        throw new Error(`Resend API error: ${error.message}`);
+    }
+
+    if (!data) {
+        throw new Error('Resend returned no data and no error — unexpected response.');
+    }
+
+    console.log(`✅ [emailService] Email sent successfully. Resend ID: ${data.id}`);
+    return { id: data.id };
 };
 
 /**
- * Sends an email using the configured transporter.
- * 
- * @param {string} to - Recipient email address
- * @param {string} subject - Email subject
- * @param {string} html - Email body (HTML)
- * @returns {Promise<any>} - Nodemailer send info
+ * Checks Resend configuration without sending a real email.
+ * Returns a status object indicating whether the service is ready.
  */
-export const sendEmail = async (to: string, subject: string, html: string) => {
-    const transport = getTransporter();
+export const checkResendConfig = (): { ok: boolean; apiKeyPresent: boolean; from: string } => {
+    const apiKeyPresent = Boolean(RESEND_API_KEY);
 
-    try {
-        const info = await transport.sendMail({
-            from: config.email.from,
-            to,
-            subject,
-            html,
-        });
-        return info;
-    } catch (error: any) {
-        // Reset cached transporter so a config fix takes effect on next attempt
-        transporter = null;
-        console.error('❌ [emailService] SMTP send failed:', error);
-        // Re-throw the real error so callers (worker, logs, DB) get accurate details
-        throw error;
+    if (!apiKeyPresent) {
+        console.error('❌ [emailService] RESEND_API_KEY is not set.');
+    } else {
+        console.log('✅ [emailService] Resend config looks good.');
     }
-};
 
-/**
- * Verifies the SMTP connection configuration.
- * @returns {Promise<boolean>} True if connection is verified, false otherwise.
- */
-export const verifyConnection = async (): Promise<boolean> => {
-    const transport = getTransporter();
-    try {
-        await transport.verify();
-        console.log('✅ SMTP Connection Verified');
-        return true;
-    } catch (error) {
-        console.error('❌ SMTP Connection Failed:', error);
-        return false;
-    }
+    return {
+        ok: apiKeyPresent,
+        apiKeyPresent,
+        from: EMAIL_FROM,
+    };
 };
