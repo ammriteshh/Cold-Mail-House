@@ -3,7 +3,7 @@ import { config } from "./config";
 import { emailQueue } from "./queues/emailQueue";
 import { emailWorker } from "./workers/emailWorker"; // starts BullMQ worker
 import { startPollingWorker } from "./workers/pollingWorker"; // starts polling fallback
-import { verifyConnection } from "./services/emailService";
+import { checkResendConfig } from "./services/emailService";
 
 /**
  * =======================
@@ -22,12 +22,13 @@ const server = app.listen(PORT, async () => {
     // Start polling worker (checks DB every 30s for due PENDING jobs)
     startPollingWorker();
 
-    // Verify SMTP connection on startup
-    const smtpOk = await verifyConnection();
-    if (!smtpOk) {
-        console.warn(`\n⚠️  SMTP WARNING: Cannot connect to ${config.email.host}:${config.email.port}`);
-        console.warn(`   Check SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in your .env file.`);
+    // Verify Resend configuration on startup
+    const resendStatus = checkResendConfig();
+    if (!resendStatus.ok) {
+        console.warn(`\n⚠️  RESEND WARNING: RESEND_API_KEY is not set.`);
         console.warn(`   Emails will FAIL until this is resolved.\n`);
+    } else {
+        console.log(`✅ Resend ready — sending from: ${resendStatus.from}`);
     }
 });
 

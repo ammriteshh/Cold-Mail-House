@@ -1,29 +1,22 @@
 import { Router, Request, Response } from 'express';
-import { verifyConnection } from '../services/emailService';
-import { config } from '../config';
+import { checkResendConfig } from '../services/emailService';
 
 const router: Router = Router();
 
 /**
- * GET /api/diagnostics/smtp
- * Verifies SMTP connection and returns status + config (password redacted)
+ * GET /api/diagnostics/resend
+ * Checks Resend API configuration and returns status.
  */
-router.get('/smtp', async (req: Request, res: Response) => {
-    const ok = await verifyConnection();
+router.get('/resend', async (req: Request, res: Response) => {
+    const result = checkResendConfig();
 
-    res.status(ok ? 200 : 500).json({
-        status: ok ? 'ok' : 'error',
-        smtp: {
-            host: config.email.host,
-            port: config.email.port,
-            user: config.email.user,
-            from: config.email.from,
-            secure: config.email.port === 465,
-            // never expose the password
-        },
-        message: ok
-            ? '✅ SMTP connection verified'
-            : '❌ SMTP connection failed — check SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS env vars on Render',
+    res.status(result.ok ? 200 : 500).json({
+        status: result.ok ? 'ok' : 'error',
+        apiKeyPresent: result.apiKeyPresent,
+        from: result.from,
+        message: result.ok
+            ? '✅ Resend is configured and ready'
+            : '❌ Resend config error — check RESEND_API_KEY and EMAIL_FROM env vars on Render',
     });
 });
 
