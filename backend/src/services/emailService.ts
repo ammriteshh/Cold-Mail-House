@@ -5,6 +5,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 const EMAIL_SENDER_NAME = process.env.EMAIL_SENDER_NAME || '';
 const REPLY_TO_EMAIL = process.env.REPLY_TO_EMAIL || 'amritesh6767@gmail.com';
+const RESEND_ALLOWED_TEST_EMAIL = process.env.RESEND_ALLOWED_TEST_EMAIL;
 
 // Build "Amritesh Singh <onboarding@resend.dev>" — falls back to bare email if name not set
 const FORMATTED_FROM = EMAIL_SENDER_NAME
@@ -39,6 +40,18 @@ export const sendEmail = async (
 ): Promise<ResendSendResult> => {
     if (!RESEND_API_KEY) {
         throw new Error('RESEND_API_KEY is not configured. Cannot send email.');
+    }
+
+    // ── Resend Free Plan Validation ───────────────────────────────────────────
+    if (RESEND_ALLOWED_TEST_EMAIL) {
+        const recipient = to.trim().toLowerCase();
+        const allowed = RESEND_ALLOWED_TEST_EMAIL.trim().toLowerCase();
+
+        if (recipient !== allowed) {
+            const errorMsg = "On free plan, emails can only be sent to your own email address.";
+            console.warn(`⚠️ [emailService] Blocked email to ${to}: ${errorMsg}`);
+            throw new Error(errorMsg);
+        }
     }
 
     console.log(`📧 [emailService] Sending email to: ${to} | Subject: "${subject}" | From: "${FORMATTED_FROM}"`);
