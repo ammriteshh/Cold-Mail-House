@@ -12,30 +12,23 @@ export const scheduleEmail = asyncHandler(async (req: Request, res: Response) =>
     try {
         const { recipient, subject, body, scheduledAt, idempotencyKey } = req.body;
 
-        // Basic validation
         if (!recipient || !subject || !body || !scheduledAt) {
-            throw new AppError('Missing required fields: recipient, subject, body, scheduledAt', 400);
+            throw new AppError('Missing required fields: recipient, subject, body, or scheduledAt', 400);
         }
 
-        // Prevent duplicates if key provided
         if (idempotencyKey) {
             const existingJob = await prisma.job.findUnique({
                 where: { idempotencyKey },
             });
             if (existingJob) {
-                return res.status(200).json({ status: 'success', data: existingJob, message: 'Job already exists (idempotent)' });
+                return res.status(200).json({ status: 'success', data: existingJob, message: 'Request already processed' });
             }
         }
 
-        // Validate scheduledAt
-        let scheduleDate = new Date();
         const parsedDate = new Date(scheduledAt);
-        if (!isNaN(parsedDate.getTime())) {
-            scheduleDate = parsedDate;
-        }
+        const scheduleDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
 
-        // Create Job in DB
-        const job = await prisma.job.create({
+        const newJob = await prisma.job.create({
             data: {
                 recipient,
                 subject,
@@ -45,53 +38,50 @@ export const scheduleEmail = asyncHandler(async (req: Request, res: Response) =>
             },
         });
 
-        // Calculate delay
-        const delay = scheduleDate.getTime() - Date.now();
+        const delay = Math.max(0, scheduleDate.getTime() - Date.now());
 
-        // Add to BullMQ
         try {
-            const bullMqJob = await emailQueue.add(
+            const queueJob = await emailQueue.add(
                 "send-email",
-                { jobId: job.id },
+                { jobId: newJob.id },
                 {
-                    delay: Math.max(0, delay),
+                    delay,
                     removeOnComplete: true,
-                    jobId: `job-${job.id}`
+                    jobId: `job-${newJob.id}`
                 }
             );
 
-            // Update DB with BullMQ ID
             await prisma.job.update({
-                where: { id: job.id },
-                data: { bullMqJobId: bullMqJob.id }
+                where: { id: newJob.id },
+                data: { bullMqJobId: queueJob.id }
             });
 
         } catch (queueError) {
-            console.error("❌ [CRITICAL] Failed to add job to queue:", queueError);
+            console.error("[JobController] Failed to add job to queue:", queueError);
             return res.status(201).json({
-                message: "Email saved but scheduling failed (Queue issue). It will be retried later.",
-                jobId: job.id,
-                warning: "Queue unavailable"
+                message: "Email record saved, but scheduling failed. It will be picked up by the fallback worker.",
+                jobId: newJob.id,
+                warning: "Scheduling delay"
             });
         }
 
         res.status(201).json({
-            message: "Email scheduled successfully",
-            jobId: job.id,
             status: 'success',
-            data: job
+            message: "Email scheduled successfully",
+            jobId: newJob.id,
+            data: newJob
         });
     } catch (error) {
         throw error;
     }
 });
 
-// Get all jobs (Single User Mode: Returns all jobs)
+// Lists historical and scheduled jobs
 export const getJobs = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const jobs = await prisma.job.findMany({
             orderBy: { createdAt: 'desc' },
-            take: 100 // Limit for safety
+            take: 100
         });
 
         res.status(200).json({ status: 'success', results: jobs.length, data: jobs });
@@ -100,12 +90,10 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-/**
- * DEBUG: Get all pending jobs that are due
- */
+// Internal diagnostics for pending jobs
 export const getPendingJobs = asyncHandler(async (req: Request, res: Response) => {
     const now = new Date();
-    const dueJobs = await prisma.job.findMany({
+    const pendingJobs = await prisma.job.findMany({
         where: {
             status: 'PENDING',
             scheduledAt: { lte: now }
@@ -113,9 +101,9 @@ export const getPendingJobs = asyncHandler(async (req: Request, res: Response) =
     });
 
     res.json({
-        count: dueJobs.length,
+        count: pendingJobs.length,
         serverTime: now,
-        jobs: dueJobs
+        jobs: pendingJobs
     });
 });
 

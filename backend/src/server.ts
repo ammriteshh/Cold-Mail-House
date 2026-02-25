@@ -5,30 +5,18 @@ import { emailWorker } from "./workers/emailWorker"; // starts BullMQ worker
 import { startPollingWorker } from "./workers/pollingWorker"; // starts polling fallback
 import { checkResendConfig } from "./services/emailService";
 
-/**
- * =======================
- * 🚀 SERVER STARTUP
- * =======================
- */
 const PORT = config.port;
 
 const server = app.listen(PORT, async () => {
-    console.log(`\n===================================`);
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🌍 Environment: ${config.env}`);
-    console.log(`📨 Email Worker: ACTIVE`);
-    console.log(`===================================\n`);
+    console.log(`[Server] Running on port ${PORT} (${config.env})`);
+    console.log(`[Server] Background workers initialized`);
 
-    // Start polling worker (checks DB every 30s for due PENDING jobs)
-    startPollingWorker();
-
-    // Verify Resend configuration on startup
+    // Verify Resend configuration
     const resendStatus = checkResendConfig();
     if (!resendStatus.ok) {
-        console.warn(`\n⚠️  RESEND WARNING: RESEND_API_KEY is not set.`);
-        console.warn(`   Emails will FAIL until this is resolved.\n`);
+        console.warn(`[Config] Missing RESEND_API_KEY. Outbound delivery will be disabled.`);
     } else {
-        console.log(`✅ Resend ready — sending from: ${resendStatus.from}`);
+        console.log(`[Config] Resend verified. Active from: ${resendStatus.from}`);
     }
 });
 
@@ -36,19 +24,19 @@ const server = app.listen(PORT, async () => {
  * Graceful Shutdown Handling
  */
 const gracefulShutdown = async () => {
-    console.log('\n🛑 SIGTERM/SIGINT received. Shutting down gracefully...');
+    console.log('[Server] Shutdown signal received. Closing connections...');
 
     try {
         await emailQueue.close();
         await emailWorker.close();
-        console.log('✅ Queues and Workers closed');
+        console.log('[Server] Queues closed');
 
         server.close(() => {
-            console.log('✅ HTTP Server closed');
+            console.log('[Server] HTTP server stopped');
             process.exit(0);
         });
     } catch (err) {
-        console.error('❌ Error during shutdown:', err);
+        console.error('[Server] Shutdown error:', err);
         process.exit(1);
     }
 };

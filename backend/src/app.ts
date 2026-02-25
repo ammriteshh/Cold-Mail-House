@@ -11,17 +11,11 @@ import { sendEmail } from "./services/emailService";
 
 const app = express();
 
-/**
- * =======================
- * 🛠️ MIDDLEWARE
- * =======================
- */
 app.use(express.json());
 
 // Trust Proxy for Render/Heroku
 app.set('trust proxy', 1);
 
-// CORS Configuration
 app.use(
     cors({
         origin: process.env.FRONTEND_URL,
@@ -29,24 +23,14 @@ app.use(
     })
 );
 
-/**
- * =======================
- * 🛣️ ROUTES
- * =======================
- */
-
 // Health check
 app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({ status: 'ok' });
 });
 
-/**
- * GET /api/test-email
- * Sends a test email via Resend to verify the integration is working.
- */
 app.get('/api/test-email', async (req: Request, res: Response) => {
     const to = (req.query.to as string) || 'amritesh6767@gmail.com';
-    const subject = 'Cold Mail House — Test Email ✅';
+    const subject = 'Cold Mail House — Test Email';
     const html = `
         <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
             <h2 style="color:#6366f1">Cold Mail House</h2>
@@ -58,37 +42,32 @@ app.get('/api/test-email', async (req: Request, res: Response) => {
 
     try {
         const result = await sendEmail(to, subject, html);
-        console.log(`✅ [test-email] Sent to ${to}. Resend ID: ${result.id}`);
+        console.log(`[TestEmail] Dispatch successful for ${to}. ID: ${result.id}`);
 
         res.status(200).json({
             success: true,
             to,
             id: result.id,
-            message: `Test email sent successfully to ${to}`,
+            message: `Test email sent to ${to}`,
         });
     } catch (err: any) {
-        console.error('❌ [test-email] Failed:', err.message);
+        console.error('[TestEmail] Failed:', err.message);
         res.status(500).json({
             success: false,
             error: err.message || 'Unknown error',
-            hint: 'Check RESEND_API_KEY and EMAIL_FROM env vars',
+            hint: 'Verify RESEND_API_KEY environment variable',
         });
     }
 });
 
-// Auth Routes (Single User Mode — no real session needed)
+// Auth Routes
 app.use("/auth", authRoutes);
 
-// Job & Analytics Routes
+// Protected API Routes
 app.use("/api/jobs", jobRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/diagnostics", diagnosticRoutes);
 
-/**
- * =======================
- * ⚠️ ERROR HANDLING
- * =======================
- */
 app.use(globalErrorHandler);
 
 export { app };
