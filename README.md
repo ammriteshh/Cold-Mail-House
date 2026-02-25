@@ -1,13 +1,17 @@
 # Cold Mail House
 
-Cold Mail House is a platform designed for scheduling and managing cold email campaigns. It allows you to create jobs, schedule them for future dates, and ensures they are sent out reliably without exceeding rate limits.
+A robust, distributed cold email automation platform built for reliable and scalable outreach.
+
+## 🚀 Overview
+*   **Built a personalized full-stack cold email automation platform** designed for individual management of targeted outreach and marketing campaigns.
+*   **Structured a resilient background job processing system** using Node.js, BullMQ, and Redis to handle high-throughput queues, ensuring reliable delivery for personal mailing lists.
+*   **Optimized database performance** by modeling specialized relationships for campaigns, scheduling, and delivery audit logs using Prisma ORM.
 
 ## Features
-
-- **Google Authentication**: Sign in securely with your Google account.
-- **Scheduling**: Set specific times for your emails to be sent automatically.
-- **Queue Management**: Uses a robust queue system to handle background processing.
-- **Rate Limiting**: Built-in protection to prevent spamming and maintain sender reputation.
+- **Precise Scheduling**: Uses BullMQ delayed jobs for exact delivery timing.
+- **Reliable Background Processing**: Decoupled architecture to handle high volumes without performance degradation.
+- **Rate Limit Compliance**: Intelligent protection to maintain sender reputation.
+- **Modern Tech Stack**: Built with TypeScript, React, and PostgreSQL.
 
 ## Tech Stack
 

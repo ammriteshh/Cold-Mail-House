@@ -1,6 +1,7 @@
 {
   "name": "cold-mail-house-monorepo",
   "version": "1.0.0",
+  "description": "A personalized full-stack cold email automation platform with resilient background job processing for single-user outreach.",
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "backend:dev": "cd backend && npm run dev",
