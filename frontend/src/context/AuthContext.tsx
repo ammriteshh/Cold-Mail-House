@@ -24,7 +24,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Check auth on mount — single-user mode always returns the admin
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -39,15 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkAuth();
     }, []);
 
-    // Single-user mode: no login needed, just set the user directly
-    const login = () => {
-        client.get('/auth/me').then(({ data }) => {
+    const login = async () => {
+        try {
+            const { data } = await client.get('/auth/me');
             setUser(data.user);
-        });
-    };
-
-    const register = () => {
-        login();
+        } catch (error) {
+            console.error('[AuthContext] Login failed:', error);
+        }
     };
 
     const logout = async () => {
@@ -60,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register: login, logout }}>
             {children}
         </AuthContext.Provider>
     );

@@ -8,26 +8,24 @@ import { motion } from 'framer-motion';
 const EmailComposer: React.FC = () => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateJobDto>();
     const [loading, setLoading] = useState(false);
-    const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [statusNotification, setStatusNotification] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const onSubmit = async (data: CreateJobDto) => {
         setLoading(true);
-        setMsg(null);
+        setStatusNotification(null);
         try {
-            // Format date to ISO string if present
             const payload = {
                 ...data,
                 scheduledAt: data.scheduledAt ? new Date(data.scheduledAt).toISOString() : undefined
             };
 
             await scheduleEmail(payload);
-            setMsg({ type: 'success', text: 'Email scheduled successfully!' });
+            setStatusNotification({ type: 'success', text: 'Email scheduled successfully.' });
             reset();
         } catch (err: any) {
-            console.error("Schedule Error:", err);
-            // Show more detailed error if available
-            const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to schedule email. Please try again.';
-            setMsg({ type: 'error', text: errorMsg });
+            console.error("Job scheduling failure:", err);
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to schedule email.';
+            setStatusNotification({ type: 'error', text: errorMsg });
         } finally {
             setLoading(false);
         }
@@ -42,21 +40,21 @@ const EmailComposer: React.FC = () => {
             <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Send className="h-5 w-5 text-indigo-500" />
-                    Internal Email Composer
+                    Internal Outreach Composer
                 </h2>
             </div>
 
             <div className="p-6">
-                {msg && (
+                {statusNotification && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className={`p-3 mb-6 rounded-lg text-sm font-medium ${msg.type === 'success'
+                        className={`p-3 mb-6 rounded-lg text-sm font-medium ${statusNotification.type === 'success'
                             ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
                             : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
                             }`}
                     >
-                        {msg.text}
+                        {statusNotification.text}
                     </motion.div>
                 )}
 
