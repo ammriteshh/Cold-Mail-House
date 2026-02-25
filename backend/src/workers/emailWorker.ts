@@ -8,22 +8,13 @@ import { EMAIL_QUEUE_NAME } from '../queues/emailQueue';
 const ONE_HOUR_SECONDS = 3600;
 const RATE_LIMIT_WINDOW = ONE_HOUR_SECONDS + 60; // slightly more than an hour
 
-/**
- * Helper to get the start of the next hour in milliseconds.
- */
 const getNextHourDelay = (): number => {
     const now = new Date();
     const nextHour = new Date(now);
-    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // Top of next hour
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0);
     return nextHour.getTime() - now.getTime();
 };
 
-/**
- * Checks if the sender has exceeded their hourly rate limit.
- */
-/**
- * Updates the job status in the database.
- */
 const updateJobStatus = async (jobId: number, status: 'COMPLETED' | 'FAILED', failureReason?: string) => {
     try {
         await prisma.job.update({
@@ -34,29 +25,25 @@ const updateJobStatus = async (jobId: number, status: 'COMPLETED' | 'FAILED', fa
             },
         });
     } catch (error) {
-        console.error(`Failed to update job status for Job ${jobId}:`, error);
+        console.error(`[Worker] Failed to update job status for ID ${jobId}:`, error);
     }
 };
 
-/**
- * Main processor for email jobs.
- */
 const processEmailJob = async (job: Job) => {
-    const { jobId } = job.data; // Now using numeric ID directly if passed, or matching job creation
+    const { jobId } = job.data;
+    const dbJobId = typeof jobId === 'string' && jobId.startsWith('job-')
+        ? parseInt(jobId.split('-')[1])
+        : parseInt(String(jobId));
 
-    // Job ID from BullMQ might be different from DB ID if we didn't force it, but our controller forces it.
-    // However, the controller passes { jobId: job.id } in data.
-    const dbJobId = typeof jobId === 'string' && jobId.startsWith('job-') ? parseInt(jobId.split('-')[1]) : jobId;
-
-    const emailJob = await prisma.job.findUnique({ where: { id: parseInt(String(dbJobId)) } });
+    const emailJob = await prisma.job.findUnique({ where: { id: dbJobId } });
 
     if (!emailJob) {
-        console.error(`Job ${jobId} not found in DB`);
+        console.error(`[Worker] Job ${jobId} not found in database`);
         return;
     }
 
     if (emailJob.status === 'COMPLETED') {
-        console.log(`Job ${jobId} already COMPLETED. Skipping.`);
+        console.log(`[Worker] Job ${jobId} already completed. Skipping.`);
         return;
     }
 
@@ -64,12 +51,12 @@ const processEmailJob = async (job: Job) => {
 
     try {
         const info = await sendEmail(emailJob.recipient, emailJob.subject, emailJob.body);
-        console.log(`✅ Email sent for Job ${jobId}. Resend ID: ${info.id}`);
+        console.log(`[Worker] Email dispatched for Job ${jobId}. External ID: ${info.id}`);
         await updateJobStatus(emailJob.id, 'COMPLETED');
     } catch (error: any) {
-        console.error(`Failed to send email for Job ${jobId}:`, error);
-        await updateJobStatus(emailJob.id, 'FAILED', error.message || 'Unknown error');
-        throw error; // Rethrow to let BullMQ handle retry/failure logic
+        console.error(`[Worker] Failed to dispatch email for Job ${jobId}:`, error.message);
+        await updateJobStatus(emailJob.id, 'FAILED', error.message || 'Unknown delivery failure');
+        throw error;
     }
 };
 
@@ -82,14 +69,10 @@ export const emailWorker = new Worker(EMAIL_QUEUE_NAME, processEmailJob, {
     },
 });
 
-// emailWorker.on('completed', (job) => {
-//     console.log(`Queue Job ${job.id} completed!`);
-// });
-
 emailWorker.on('failed', (job, err) => {
     if (err.message.includes('RateLimit')) {
-        console.log(`Queue Job ${job?.id} rate limited (rescheduled).`);
+        console.log(`[Worker] Queue Job ${job?.id} rate limited (rescheduled).`);
     } else {
-        console.error(`Queue Job ${job?.id} failed: ${err.message}`);
+        console.error(`[Worker] Queue Job ${job?.id} failed: ${err.message}`);
     }
 });

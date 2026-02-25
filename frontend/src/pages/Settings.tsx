@@ -49,14 +49,13 @@ const Settings = () => {
             >
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
 
-                {/* SMTP Diagnostics */}
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
                     <div className="flex items-center gap-3">
                         <Wifi className="h-5 w-5 text-indigo-500" />
-                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">SMTP Diagnostics</h2>
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Connection Diagnostics</h2>
                     </div>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Test whether the server can connect to your configured SMTP provider. If emails are failing, run this to see the exact error.
+                        Verify the server's connectivity to the configured email provider and view current outbound settings.
                     </p>
 
                     <button
@@ -65,9 +64,9 @@ const Settings = () => {
                         className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                         {testing ? (
-                            <><Loader className="h-4 w-4 animate-spin" /> Testing…</>
+                            <><Loader className="h-4 w-4 animate-spin" /> Verifying...</>
                         ) : (
-                            <>Test SMTP Connection</>
+                            <>Verify Connectivity</>
                         )}
                     </button>
 

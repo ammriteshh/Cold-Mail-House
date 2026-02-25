@@ -21,7 +21,7 @@ const Dashboard: React.FC = () => {
             const res = await getJobStats();
             setStats(res.data);
         } catch (error) {
-            console.error("Failed to fetch stats", error);
+            console.error("Failed to fetch dashboard statistics", error);
         } finally {
             setLoading(false);
         }
@@ -29,7 +29,6 @@ const Dashboard: React.FC = () => {
 
     useEffect(() => {
         fetchStats();
-        // Poll stats every 10 seconds to keep it fresh
         const interval = setInterval(fetchStats, 10000);
         return () => clearInterval(interval);
     }, []);
