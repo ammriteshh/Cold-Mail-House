@@ -18,6 +18,9 @@ const server = app.listen(PORT, async () => {
     } else {
         console.log(`[Config] Resend verified. Active from: ${resendStatus.from}`);
     }
+
+    // Start the polling fallback to ensure delayed/stuck jobs are processed
+    startPollingWorker();
 });
 
 /**
