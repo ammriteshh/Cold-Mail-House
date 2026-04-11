@@ -4,19 +4,19 @@ import { checkResendConfig } from '../services/emailService';
 const router: Router = Router();
 
 /**
- * GET /api/diagnostics/smtp
- * Checks SMTP API configuration and returns status.
+ * GET /api/diagnostics/email
+ * Checks Resend API configuration and returns status.
  */
-router.get('/smtp', async (req: Request, res: Response) => {
+router.get('/email', async (req: Request, res: Response) => {
     const result = checkResendConfig();
 
     res.status(result.ok ? 200 : 500).json({
         status: result.ok ? 'ok' : 'error',
-        apiKeyPresent: result.apiKeyPresent, // this actually tells us if config is present now
+        apiKeyPresent: result.apiKeyPresent,
         from: result.from,
         message: result.ok
-            ? '✅ SMTP is configured and ready'
-            : '❌ SMTP config error — check SMTP_USER and SMTP_PASS env vars',
+            ? '✅ Resend is configured and ready'
+            : '❌ Resend config error — check RESEND_API_KEY env var',
     });
 });
 

@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
 import { config } from '../src/config';
+import { Resend } from 'resend';
 import dns from 'dns';
 import util from 'util';
 
@@ -7,20 +7,19 @@ const resolveTxt = util.promisify(dns.resolveTxt);
 
 const verifyConnection = async (): Promise<boolean> => {
     try {
-        const transport = nodemailer.createTransport({
-            host: config.email.host,
-            port: config.email.port,
-            secure: config.email.port === 465,
-            auth: {
-                user: config.email.user,
-                pass: config.email.pass,
-            },
-        });
-        await transport.verify();
-        console.log('✅ SMTP Connection Verified');
+        if (!config.resend.apiKey) {
+            throw new Error('Missing RESEND_API_KEY');
+        }
+        const resend = new Resend(config.resend.apiKey);
+        
+        const { error } = await resend.domains.list();
+        if (error) {
+            throw new Error(error.message);
+        }
+        console.log('✅ Resend API Connection Verified');
         return true;
-    } catch (error) {
-        console.error('❌ SMTP Connection Failed:', error);
+    } catch (error: any) {
+        console.error('❌ Resend API Connection Failed:', error.message);
         return false;
     }
 };
@@ -79,23 +78,21 @@ async function runAudit() {
     console.log('      Email Deliverability Audit Tool        ');
     console.log('=============================================');
 
-    // 1. SMTP Connection Check
-    console.log('\nSTEP 1: Testing SMTP Connection...');
+    // 1. Connection Check
+    console.log('\nSTEP 1: Testing Resend Connection...');
     const isConnected = await verifyConnection();
 
     if (!isConnected) {
-        console.error('❌ SMTP Connection failed. Please check your credentials in .env');
-        // proceed anyway to show other checks? No, connection is critical.
-        // Actually, let's proceed to show DNS checks if possible.
+        console.error('❌ Resend Connection failed. Please check your credentials in .env');
     }
 
     // 2. Domain & DNS Check
-    const fromAddress = config.email.user || 'test@example.com'; // Fallback for checking logic
+    const fromAddress = config.resend.from || 'test@example.com';
     const domainMatch = fromAddress.match(/@([\w.-]+)/);
 
     if (domainMatch && domainMatch[1]) {
         const domain = domainMatch[1];
-        if (domain === 'ethereal.email' || domain === 'example.com') {
+        if (domain === 'ethereal.email' || domain === 'example.com' || domain === 'resend.dev') {
             console.warn(`\n⚠️  Using test/default domain (${domain}). DNS checks skipped/irrelevant.`);
         } else {
             await checkDNS(domain);

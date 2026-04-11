@@ -15,11 +15,10 @@ export const config = {
         port: parseInt(process.env.REDIS_PORT || '6379', 10),
     },
 
-    // ─── Nodemailer / SMTP Setup ───────────────────────────────
-    smtp: {
-        user: process.env.SMTP_USER || '',
-        pass: process.env.SMTP_PASS || '',
-        from: process.env.EMAIL_FROM || process.env.SMTP_USER || '',
+    // ─── Resend Setup ───────────────────────────────
+    resend: {
+        apiKey: process.env.RESEND_API_KEY || '',
+        from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
     },
 
     rateLimit: {
@@ -31,8 +30,7 @@ export const config = {
 const requiredEnvVars = [
     'DATABASE_URL',
     'FRONTEND_URL',
-    'SMTP_USER',
-    'SMTP_PASS',
+    'RESEND_API_KEY',
 ];
 
 const missingVars = requiredEnvVars.filter((key) => !process.env[key]);

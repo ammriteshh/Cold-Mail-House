@@ -11,7 +11,7 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
         user: {
             id: '1',
             name: 'Admin',
-            email: process.env.SMTP_USER || 'admin@coldmailhouse.com',
+            email: process.env.EMAIL_FROM || 'admin@coldmailhouse.com',
             role: 'admin',
         }
     });
