@@ -1,86 +1,83 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const EMAIL_FROM = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-const EMAIL_SENDER_NAME = process.env.EMAIL_SENDER_NAME || '';
-const REPLY_TO_EMAIL = process.env.REPLY_TO_EMAIL || 'amritesh6767@gmail.com';
-const RESEND_ALLOWED_TEST_EMAIL = process.env.RESEND_ALLOWED_TEST_EMAIL;
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
+const SMTP_USER = process.env.SMTP_USER || '';
+const SMTP_PASS = process.env.SMTP_PASS || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || SMTP_USER;
+const EMAIL_SENDER_NAME = process.env.EMAIL_SENDER_NAME || 'Cold Mail House';
+const REPLY_TO_EMAIL = process.env.REPLY_TO_EMAIL || SMTP_USER;
 
 const FROM_FIELD = EMAIL_SENDER_NAME
-    ? `${EMAIL_SENDER_NAME} <${EMAIL_FROM}>`
+    ? `"${EMAIL_SENDER_NAME}" <${EMAIL_FROM}>`
     : EMAIL_FROM;
 
-if (!RESEND_API_KEY) {
-    console.warn('[EmailService] RESEND_API_KEY is missing. Delivery will fail.');
+if (!SMTP_USER || !SMTP_PASS) {
+    console.warn('[EmailService] SMTP_USER or SMTP_PASS is missing. Delivery will fail.');
 }
 
-const resend = new Resend(RESEND_API_KEY || 'missing_key');
+const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465, // true for 465, false for other ports
+    auth: {
+        user: SMTP_USER,
+        pass: SMTP_PASS,
+    },
+});
 
 export interface EmailResponse {
     id: string;
 }
 
 /**
- * Dispatches an email via Resend API with validation and error handling.
+ * Dispatches an email via Nodemailer with validation and error handling.
  */
 export const sendEmail = async (
     to: string,
     subject: string,
     html: string,
 ): Promise<EmailResponse> => {
-    if (!RESEND_API_KEY) {
-        throw new Error('RESEND_API_KEY is not configured. Cannot send email.');
-    }
-
-    if (RESEND_ALLOWED_TEST_EMAIL) {
-        const recipient = to.trim().toLowerCase();
-        const allowed = RESEND_ALLOWED_TEST_EMAIL.trim().toLowerCase();
-
-        if (recipient !== allowed) {
-            const errorMsg = "On free plan, emails can only be sent to your own email address.";
-            console.warn(`[EmailService] Blocked email to ${to}: ${errorMsg}`);
-            throw new Error(errorMsg);
-        }
+    if (!SMTP_USER || !SMTP_PASS) {
+        throw new Error('SMTP credentials are not configured. Cannot send email.');
     }
 
     console.log(`[EmailService] Sending email to: ${to} | Subject: "${subject}"`);
 
-    const { data, error } = await resend.emails.send({
-        from: FROM_FIELD,
-        replyTo: REPLY_TO_EMAIL,  // recipients hit Reply → amritesh6767@gmail.com
-        to,
-        subject,
-        html,
-    });
+    try {
+        const info = await transporter.sendMail({
+            from: FROM_FIELD,
+            replyTo: REPLY_TO_EMAIL,
+            to,
+            subject,
+            html,
+        });
 
-    if (error) {
-        console.error('[EmailService] Resend API error:', {
+        console.log(`[EmailService] Email dispatched successfully. Message ID: ${info.messageId}`);
+        return { id: info.messageId };
+    } catch (error: any) {
+        console.error('[EmailService] Nodemailer error:', {
             name: error.name,
             message: error.message,
         });
-        throw new Error(`Resend API error: ${error.message}`);
+        throw new Error(`Nodemailer error: ${error.message}`);
     }
-
-    if (!data) {
-        throw new Error('Unexpected empty response from Resend.');
-    }
-
-    console.log(`[EmailService] Email dispatched successfully. ID: ${data.id}`);
-    return { id: data.id };
 };
 
 export const checkResendConfig = () => {
-    const apiKeyPresent = Boolean(RESEND_API_KEY);
+    // Kept the function name as checkResendConfig to avoid breaking routes/dependency changes quickly,
+    // though internally it checks SMTP.
+    const configPresent = Boolean(SMTP_USER && SMTP_PASS);
 
-    if (!apiKeyPresent) {
-        console.error('[EmailService] RESEND_API_KEY is not set.');
+    if (!configPresent) {
+        console.error('[EmailService] SMTP_USER or SMTP_PASS is not set.');
     } else {
         console.log(`[EmailService] Config verified — sending from: "${FROM_FIELD}"`);
     }
 
     return {
-        ok: apiKeyPresent,
-        apiKeyPresent,
+        ok: configPresent,
+        apiKeyPresent: configPresent,
         from: FROM_FIELD,
         replyTo: REPLY_TO_EMAIL,
     };

@@ -21,43 +21,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const defaultUser: User = { id: 'public', name: 'Guest', email: 'guest@public.com', role: 'user' };
+    const [user] = useState<User | null>(defaultUser);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const { data } = await client.get('/auth/me');
-                setUser(data.user);
-            } catch (error) {
-                setUser(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        checkAuth();
-    }, []);
-
-    const login = async () => {
-        try {
-            const { data } = await client.get('/auth/me');
-            setUser(data.user);
-        } catch (error) {
-            console.error('[AuthContext] Login failed:', error);
-        }
-    };
-
-    const logout = async () => {
-        try {
-            await client.post('/auth/logout');
-        } finally {
-            setUser(null);
-            window.location.href = '/login';
-        }
-    };
+    const login = async () => {};
+    const logout = async () => { window.location.href = '/'; };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register: login, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: true, isLoading: false, login, register: login, logout }}>
             {children}
         </AuthContext.Provider>
     );
