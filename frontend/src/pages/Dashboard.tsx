@@ -1,6 +1,7 @@
 import Layout from '../components/layout/Layout';
 import EmailComposer from '../components/dashboard/EmailComposer';
 import ScheduledTable from '../components/dashboard/ScheduledTable';
+import AIGenerator from '../components/AIGenerator';
 
 const Dashboard: React.FC = () => {
     return (
@@ -14,6 +15,8 @@ const Dashboard: React.FC = () => {
                     <ScheduledTable />
                 </div>
             </div>
+
+            <AIGenerator />
         </Layout>
     );
 };

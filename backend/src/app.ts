@@ -6,6 +6,7 @@ import jobRoutes from "./routes/jobRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
 import authRoutes from "./routes/authRoutes";
 import diagnosticRoutes from "./routes/diagnosticRoutes";
+import aiRoutes from "./routes/aiRoutes";
 import { globalErrorHandler } from "./middleware/errorHandler";
 import { sendEmail } from "./services/emailService";
 
@@ -67,6 +68,7 @@ app.use("/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/diagnostics", diagnosticRoutes);
+app.use("/api", aiRoutes);
 
 app.use(globalErrorHandler);
 
