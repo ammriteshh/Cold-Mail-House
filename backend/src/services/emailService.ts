@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10); // 587 is more stable for STARTTLS on Cloud Hosts
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || SMTP_USER;
@@ -19,7 +19,9 @@ if (!SMTP_USER || !SMTP_PASS) {
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: SMTP_PORT,
-    secure: SMTP_PORT === 465, // true for 465, false for other ports
+    secure: SMTP_PORT === 465, // true for 465, false for 587 (STARTTLS)
+    requireTLS: true, // Force TLS upgrade if port is 587
+    connectionTimeout: 10000, // Fail fast after 10s instead of long hang
     auth: {
         user: SMTP_USER,
         pass: SMTP_PASS,
