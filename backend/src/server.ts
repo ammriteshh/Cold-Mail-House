@@ -4,6 +4,10 @@ import { emailQueue } from "./queues/emailQueue";
 import { emailWorker } from "./workers/emailWorker"; // starts BullMQ worker
 import { startPollingWorker } from "./workers/pollingWorker"; // starts polling fallback
 import { checkResendConfig } from "./services/emailService";
+import {
+    startFailedEmailCleanupCron,
+    stopFailedEmailCleanupCron,
+} from "./cron/failedEmailCleanup";
 
 const PORT = config.port;
 
@@ -21,6 +25,8 @@ const server = app.listen(PORT, async () => {
 
     // Start the polling fallback to ensure delayed/stuck jobs are processed
     startPollingWorker();
+
+    startFailedEmailCleanupCron();
 });
 
 /**
@@ -30,6 +36,7 @@ const gracefulShutdown = async () => {
     console.log('[Server] Shutdown signal received. Closing connections...');
 
     try {
+        stopFailedEmailCleanupCron();
         await emailQueue.close();
         await emailWorker.close();
         console.log('[Server] Queues closed');

@@ -28,11 +28,15 @@
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "ioredis": "^5.9.2",
+    "node-cron": "^4.2.1",
     "pg": "^8.18.0",
     "prisma": "7.3.0",
     "resend": "^6.10.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node-cron": "^3.0.11"
   }
 }
