@@ -1,4 +1,4 @@
-import { Mail, FileText, Settings, LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Mail } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
