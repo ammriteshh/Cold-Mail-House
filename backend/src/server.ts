@@ -11,12 +11,12 @@ const server = app.listen(PORT, async () => {
     console.log(`[Server] Running on port ${PORT} (${config.env})`);
     console.log(`[Server] Background workers initialized`);
 
-    // Verify Resend configuration
-    const resendStatus = checkResendConfig();
-    if (!resendStatus.ok) {
-        console.warn(`[Config] Missing RESEND_API_KEY. Outbound delivery will be disabled.`);
+    // Verify SMTP configuration
+    const smtpStatus = checkResendConfig();
+    if (!smtpStatus.ok) {
+        console.warn(`[Config] Missing SMTP_USER or SMTP_PASS. Outbound delivery will be disabled.`);
     } else {
-        console.log(`[Config] Resend verified. Active from: ${resendStatus.from}`);
+        console.log(`[Config] SMTP verified. Active from: ${smtpStatus.from}`);
     }
 
     // Start the polling fallback to ensure delayed/stuck jobs are processed
