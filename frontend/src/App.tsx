@@ -10,7 +10,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
           {/* Redirect generic 404s to root */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

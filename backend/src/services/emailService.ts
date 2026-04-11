@@ -24,6 +24,11 @@ const transporter = nodemailer.createTransport({
         user: SMTP_USER,
         pass: SMTP_PASS,
     },
+    tls: {
+        rejectUnauthorized: false
+    },
+    // @ts-ignore: Force Node.js to use IPv4 to bypass Render's IPv6 ENETUNREACH issues
+    family: 4,
 });
 
 export interface EmailResponse {
