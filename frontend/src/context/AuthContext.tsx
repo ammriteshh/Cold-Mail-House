@@ -1,7 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { client } from '../api/client';
-
+import React, { createContext, useContext, useState } from 'react';
 interface User {
     id: string;
     name: string;
